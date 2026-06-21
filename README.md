@@ -2,6 +2,8 @@
 
 Production-oriented web application for an ultrasound diagnostic center.
 
+For detailed Windows setup, startup, verification, shutdown, and troubleshooting instructions, see [RUN_APP.md](RUN_APP.md).
+
 ## Prerequisites
 
 - Node.js 24
