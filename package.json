@@ -1,0 +1,19 @@
+{
+  "name": "uzd-expert",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "npm@11.11.0",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
