@@ -1,0 +1,36 @@
+# API Documentation
+
+All endpoints use the `/api/v1` prefix and JSON response bodies.
+
+## Public Clinic Information
+
+### `GET /api/v1/clinic-information`
+
+Returns the public clinic information used by the clinic information section. Authentication is not required.
+
+#### Successful response
+
+Status: `200 OK`
+
+```json
+{
+  "data": {
+    "clinicName": "Example clinic",
+    "description": "Example clinic description"
+  }
+}
+```
+
+#### Clinic information is not configured
+
+Status: `404 Not Found`
+
+```json
+{
+  "error": {
+    "code": "CLINIC_INFORMATION_NOT_FOUND",
+    "message": "Clinic information is not configured",
+    "details": []
+  }
+}
+```
