@@ -10,7 +10,7 @@ The application consists of three processes:
 | --- | --- | --- |
 | Frontend | React and Vite | `http://localhost:5173` |
 | Backend API | Fastify | `http://localhost:3000` |
-| Development database | PostgreSQL 17 in Docker | `localhost:5432` |
+| Development database | PostgreSQL 17 in Docker | `localhost:5434` |
 
 An isolated PostgreSQL test database is available on `localhost:5433`. It is only required when running backend tests.
 
@@ -103,7 +103,7 @@ docker compose -f .\infrastructure\compose.yaml logs postgres
 Environment variables set with `$env:` apply only to the current PowerShell window. Run all backend migration, seed, and startup commands from the same window, or set these variables again in a new window.
 
 ```powershell
-$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5432/uzd_expert'
+$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
 $env:CORS_ORIGIN = 'http://localhost:5173'
 $env:HOST = '127.0.0.1'
 $env:PORT = '3000'
@@ -247,7 +247,7 @@ Migrations and seeding are normally required only during initial setup or after 
 4. In the backend terminal, set the backend environment variables again and run:
 
    ```powershell
-   $env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5432/uzd_expert'
+   $env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
    $env:CORS_ORIGIN = 'http://localhost:5173'
    $env:HOST = '127.0.0.1'
    $env:PORT = '3000'
@@ -349,7 +349,7 @@ Action:
 The backend was started in a PowerShell window where the environment variable was not set. In that same window, run:
 
 ```powershell
-$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5432/uzd_expert'
+$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
 npm run dev -w backend
 ```
 
@@ -362,7 +362,7 @@ docker compose -f .\infrastructure\compose.yaml ps
 docker compose -f .\infrastructure\compose.yaml logs postgres
 ```
 
-Confirm that `DATABASE_URL` uses port `5432`, not the test database port `5433`.
+Confirm that `DATABASE_URL` uses the development port `5434`, not the test database port `5433` or another application's port `5432`.
 
 ### API returns `CLINIC_INFORMATION_NOT_FOUND`
 
@@ -390,7 +390,7 @@ The value must match the frontend origin exactly.
 Inspect the default ports:
 
 ```powershell
-Get-NetTCPConnection -LocalPort 3000,5173,5432,5433 -ErrorAction SilentlyContinue |
+Get-NetTCPConnection -LocalPort 3000,5173,5432,5433,5434 -ErrorAction SilentlyContinue |
   Select-Object LocalAddress,LocalPort,State,OwningProcess
 ```
 

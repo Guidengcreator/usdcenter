@@ -27,7 +27,7 @@ docker compose -f infrastructure/compose.yaml up -d postgres postgres-test
 Configure the backend in the current shell:
 
 ```powershell
-$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5432/uzd_expert'
+$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
 $env:CORS_ORIGIN = 'http://localhost:5173'
 ```
 
