@@ -22,6 +22,12 @@ const description = readSeedValue(
   "clinicInformationSeed.description",
   clinicInformationSeed.description,
 );
+const address = readSeedValue(
+  "clinicInformationSeed.address",
+  clinicInformationSeed.address,
+);
+const phone = readSeedValue("clinicInformationSeed.phone", clinicInformationSeed.phone);
+const email = readSeedValue("clinicInformationSeed.email", clinicInformationSeed.email);
 const { client, database } = createDatabase(databaseUrl);
 
 try {
@@ -30,6 +36,9 @@ try {
     await transaction.insert(clinicInformation).values({
       clinicName,
       description,
+      address,
+      phone,
+      email,
     });
   });
 } finally {

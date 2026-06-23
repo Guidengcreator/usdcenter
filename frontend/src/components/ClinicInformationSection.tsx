@@ -7,6 +7,11 @@ interface ClinicInformationSectionProps {
 export function ClinicInformationSection({
   state,
 }: ClinicInformationSectionProps) {
+  const phoneHref =
+    state.status === "ready"
+      ? `tel:${state.data.phone.replace(/[^\d+]/g, "")}`
+      : undefined;
+
   return (
     <section
       className="clinic-information"
@@ -41,6 +46,31 @@ export function ClinicInformationSection({
           <div className="clinic-copy">
             <h1 id="clinic-name">{state.data.clinicName}</h1>
             <p>{state.data.description}</p>
+
+            <dl className="clinic-contact">
+              <div className="clinic-contact-item">
+                <dt>Адреса</dt>
+                <dd>
+                  <address>{state.data.address}</address>
+                </dd>
+              </div>
+
+              <div className="clinic-contact-item">
+                <dt>Телефон</dt>
+                <dd>
+                  <a href={phoneHref}>{state.data.phone}</a>
+                </dd>
+              </div>
+
+              {state.data.email && (
+                <div className="clinic-contact-item">
+                  <dt>Електронна пошта</dt>
+                  <dd>
+                    <a href={`mailto:${state.data.email}`}>{state.data.email}</a>
+                  </dd>
+                </div>
+              )}
+            </dl>
           </div>
         )}
       </div>

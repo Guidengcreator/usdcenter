@@ -43,7 +43,7 @@ Seed clinic content from the checked-in seed file:
 npm run db:seed:clinic -w backend
 ```
 
-The seed data lives in `backend/src/db/seeds/clinic-information.seed.ts`.
+The seed data lives in `backend/src/db/seeds/clinic-information.seed.ts` and includes the public clinic name, description, address, phone number, and email address.
 
 ## Run locally
 
