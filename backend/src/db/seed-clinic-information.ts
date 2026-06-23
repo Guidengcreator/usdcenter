@@ -1,20 +1,27 @@
 import { readEnvironment } from "../config/environment.js";
 import { createDatabase } from "./database.js";
 import { clinicInformation } from "./schema.js";
+import { clinicInformationSeed } from "./seeds/clinic-information.seed.js";
 
-function readRequiredValue(name: string): string {
-  const value = process.env[name]?.trim();
+function readSeedValue(name: string, value: string): string {
+  const trimmedValue = value.trim();
 
-  if (!value) {
-    throw new Error(`${name} is required to seed clinic information`);
+  if (!trimmedValue) {
+    throw new Error(`${name} is required in the clinic information seed file`);
   }
 
-  return value;
+  return trimmedValue;
 }
 
 const { databaseUrl } = readEnvironment();
-const clinicName = readRequiredValue("CLINIC_NAME");
-const description = readRequiredValue("CLINIC_DESCRIPTION");
+const clinicName = readSeedValue(
+  "clinicInformationSeed.clinicName",
+  clinicInformationSeed.clinicName,
+);
+const description = readSeedValue(
+  "clinicInformationSeed.description",
+  clinicInformationSeed.description,
+);
 const { client, database } = createDatabase(databaseUrl);
 
 try {
