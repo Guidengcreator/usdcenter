@@ -70,6 +70,11 @@ export function ClinicInformationSection({
                   </dd>
                 </div>
               )}
+
+              <div className="clinic-contact-item clinic-hours">
+                <dt>Графік роботи</dt>
+                <dd>{state.data.workingHours}</dd>
+              </div>
             </dl>
           </div>
         )}

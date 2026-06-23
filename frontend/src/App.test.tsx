@@ -22,6 +22,7 @@ describe("public clinic information", () => {
       address: "Test street 1",
       phone: "+380 44 123 45 67",
       email: "info@testclinic.example",
+      workingHours: "Mon-Fri: 09:00-18:00",
     });
 
     render(<App />);
@@ -43,6 +44,7 @@ describe("public clinic information", () => {
     expect(
       screen.getByRole("link", { name: "info@testclinic.example" }),
     ).toHaveAttribute("href", "mailto:info@testclinic.example");
+    expect(screen.getByText("Mon-Fri: 09:00-18:00")).toBeInTheDocument();
     expect(getClinicInformationMock).toHaveBeenCalledOnce();
   });
 });

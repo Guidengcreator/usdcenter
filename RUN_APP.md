@@ -53,10 +53,10 @@ git branch --show-current
 git status --short
 ```
 
-The US-1.2 implementation is currently on:
+The US-1.3 implementation is currently on:
 
 ```text
-feature/us-1-2-address-contact-information
+feature/us-1-3-hours-of-operation
 ```
 
 ## 4. Install JavaScript dependencies
@@ -137,7 +137,7 @@ The seed data is checked in at:
 backend/src/db/seeds/clinic-information.seed.ts
 ```
 
-It contains the public clinic name, description, address, phone number, and email address.
+It contains the public clinic name, description, address, phone number, email address, and working hours.
 
 Seed the database:
 
@@ -180,9 +180,10 @@ Expected response shape:
   "data": {
     "clinicName": "УЗД Експерт",
     "description": "Діагностичний центр ультразвукових досліджень.",
-    "address": "м. Київ, вул. Прикладна, 10",
+    "address": "м. Полтава, вул. Прикладна, 10",
     "phone": "+380 44 123 45 67",
-    "email": "info@uzdexpert.ua"
+    "email": "info@uzdexpert.ua",
+    "workingHours": "Пн-Пт: 09:00-18:00\nСб: 09:00-14:00\nНд: вихідний"
   }
 }
 ```
@@ -404,3 +405,5 @@ docker compose -f .\infrastructure\compose.yaml down -v
 Warning: the `-v` option permanently deletes the local PostgreSQL volume. Afterward, repeat the database startup, migration, and seed steps.
 
 For US-1.2 specifically, you do not need to delete the volume. The migration backfills the new contact columns so existing US-1.1 data can stay in place.
+
+For US-1.3, you also do not need to delete the volume. The migration backfills the new working-hours column for existing clinic-information rows.

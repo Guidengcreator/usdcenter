@@ -8,6 +8,7 @@ export const clinicInformation = pgTable("clinic_information", {
   address: text("address").notNull(),
   phone: varchar("phone", { length: 32 }).notNull(),
   email: varchar("email", { length: 254 }),
+  workingHours: text("working_hours").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

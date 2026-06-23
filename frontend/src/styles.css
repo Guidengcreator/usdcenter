@@ -184,6 +184,7 @@ a {
   font-size: 0.98rem;
   line-height: 1.6;
   overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
 .clinic-contact-item address {
@@ -193,6 +194,10 @@ a {
 .clinic-contact-item a {
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.18em;
+}
+
+.clinic-hours {
+  grid-column: span 3;
 }
 
 .error-state h1 {
@@ -326,6 +331,10 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .clinic-hours {
+    grid-column: span 2;
+  }
+
   .visual-panel {
     width: min(86vw, 22rem);
   }
@@ -356,6 +365,10 @@ a {
 
   .clinic-contact {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clinic-hours {
+    grid-column: auto;
   }
 }
 
