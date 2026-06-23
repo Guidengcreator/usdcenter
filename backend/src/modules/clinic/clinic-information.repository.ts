@@ -9,6 +9,7 @@ export interface PublicClinicInformation {
   address: string;
   phone: string;
   email: string | null;
+  workingHours: string;
 }
 
 export class ClinicInformationRepository {
@@ -22,6 +23,7 @@ export class ClinicInformationRepository {
         address: clinicInformation.address,
         phone: clinicInformation.phone,
         email: clinicInformation.email,
+        workingHours: clinicInformation.workingHours,
       })
       .from(clinicInformation)
       .orderBy(desc(clinicInformation.updatedAt), desc(clinicInformation.id))

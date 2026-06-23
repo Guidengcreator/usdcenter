@@ -15,6 +15,13 @@
       "when": 1782219640261,
       "tag": "0001_add-clinic-contact-information",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782225056919,
+      "tag": "0002_add-clinic-working-hours",
+      "breakpoints": true
     }
   ]
 }

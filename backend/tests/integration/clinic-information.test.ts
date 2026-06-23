@@ -31,6 +31,7 @@ describe("GET /api/v1/clinic-information", () => {
       address: "Test street 1",
       phone: "+380 44 123 45 67",
       email: "info@testclinic.example",
+      workingHours: "Mon-Fri: 09:00-18:00",
     });
 
     const app = buildApp({ database });
@@ -50,6 +51,7 @@ describe("GET /api/v1/clinic-information", () => {
         address: "Test street 1",
         phone: "+380 44 123 45 67",
         email: "info@testclinic.example",
+        workingHours: "Mon-Fri: 09:00-18:00",
       },
     });
   });
@@ -61,6 +63,7 @@ describe("GET /api/v1/clinic-information", () => {
       address: "Test street 1",
       phone: "+380 44 123 45 67",
       email: null,
+      workingHours: "Mon-Fri: 09:00-18:00",
     });
 
     const app = buildApp({ database });
@@ -80,6 +83,7 @@ describe("GET /api/v1/clinic-information", () => {
         address: "Test street 1",
         phone: "+380 44 123 45 67",
         email: null,
+        workingHours: "Mon-Fri: 09:00-18:00",
       },
     });
   });

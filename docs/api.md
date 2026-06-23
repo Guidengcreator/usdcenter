@@ -21,7 +21,8 @@ Status: `200 OK`
     "description": "Example clinic description",
     "address": "Example clinic address",
     "phone": "+380 44 123 45 67",
-    "email": "info@example.com"
+    "email": "info@example.com",
+    "workingHours": "Mon-Fri: 09:00-18:00"
   }
 }
 ```

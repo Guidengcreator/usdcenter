@@ -26,8 +26,18 @@ const address = readSeedValue(
   "clinicInformationSeed.address",
   clinicInformationSeed.address,
 );
-const phone = readSeedValue("clinicInformationSeed.phone", clinicInformationSeed.phone);
-const email = readSeedValue("clinicInformationSeed.email", clinicInformationSeed.email);
+const phone = readSeedValue(
+  "clinicInformationSeed.phone",
+  clinicInformationSeed.phone,
+);
+const email = readSeedValue(
+  "clinicInformationSeed.email",
+  clinicInformationSeed.email,
+);
+const workingHours = readSeedValue(
+  "clinicInformationSeed.workingHours",
+  clinicInformationSeed.workingHours,
+);
 const { client, database } = createDatabase(databaseUrl);
 
 try {
@@ -39,6 +49,7 @@ try {
       address,
       phone,
       email,
+      workingHours,
     });
   });
 } finally {

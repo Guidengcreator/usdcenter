@@ -18,6 +18,7 @@ describe("clinic information API", () => {
           address: "Test street 1",
           phone: "+380 44 123 45 67",
           email: "info@testclinic.example",
+          workingHours: "Mon-Fri: 09:00-18:00",
         },
       }),
     });
@@ -29,6 +30,7 @@ describe("clinic information API", () => {
       address: "Test street 1",
       phone: "+380 44 123 45 67",
       email: "info@testclinic.example",
+      workingHours: "Mon-Fri: 09:00-18:00",
     });
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:3000/api/v1/clinic-information",
@@ -52,6 +54,7 @@ describe("clinic information API", () => {
           address: "Test street 1",
           phone: "+380 44 123 45 67",
           email: null,
+          workingHours: "Mon-Fri: 09:00-18:00",
         },
       }),
     });
@@ -63,6 +66,7 @@ describe("clinic information API", () => {
       address: "Test street 1",
       phone: "+380 44 123 45 67",
       email: null,
+      workingHours: "Mon-Fri: 09:00-18:00",
     });
   });
 });

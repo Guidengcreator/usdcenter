@@ -10,7 +10,14 @@ const clinicInformationResponseSchema = {
     data: {
       type: "object",
       additionalProperties: false,
-      required: ["clinicName", "description", "address", "phone", "email"],
+      required: [
+        "clinicName",
+        "description",
+        "address",
+        "phone",
+        "email",
+        "workingHours",
+      ],
       properties: {
         clinicName: { type: "string" },
         description: { type: "string" },
@@ -19,6 +26,7 @@ const clinicInformationResponseSchema = {
         email: {
           anyOf: [{ type: "string" }, { type: "null" }],
         },
+        workingHours: { type: "string" },
       },
     },
   },
