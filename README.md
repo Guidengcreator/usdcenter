@@ -37,13 +37,13 @@ Apply migrations:
 npm run db:migrate -w backend
 ```
 
-Seed approved clinic content without hardcoding it in the repository:
+Seed clinic content from the checked-in seed file:
 
 ```powershell
-$env:CLINIC_NAME = 'УЗД Експерт'
-$env:CLINIC_DESCRIPTION = '<approved clinic description>'
 npm run db:seed:clinic -w backend
 ```
+
+The seed data lives in `backend/src/db/seeds/clinic-information.seed.ts`.
 
 ## Run locally
 

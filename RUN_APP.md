@@ -100,7 +100,7 @@ docker compose -f .\infrastructure\compose.yaml logs postgres
 
 ## 6. Configure the backend PowerShell session
 
-Environment variables set with `$env:` apply only to the current PowerShell window. Run all backend migration, seed, and startup commands from the same window, or set these variables again in a new window.
+Environment variables set with `$env:` apply only to the current PowerShell window. Run backend migration, seed, and startup commands from the same window, or set these variables again in a new window.
 
 ```powershell
 $env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
@@ -129,20 +129,12 @@ npm run db:migrate -w backend
 
 This creates the `clinic_information` table through the committed Drizzle migration. The command is safe to run again; already-applied migrations are not reapplied.
 
-## 8. Seed approved clinic information
+## 8. Seed clinic information
 
-The repository intentionally does not invent or hardcode a production clinic description. Set the approved values before running the seed command:
+The seed data is checked in at:
 
-```powershell
-$env:CLINIC_NAME = 'УЗД Експерт'
-$env:CLINIC_DESCRIPTION = '<replace this with the approved clinic description>'
-```
-
-Verify that the placeholder was replaced:
-
-```powershell
-$env:CLINIC_NAME
-$env:CLINIC_DESCRIPTION
+```text
+backend/src/db/seeds/clinic-information.seed.ts
 ```
 
 Seed the database:
@@ -151,7 +143,9 @@ Seed the database:
 npm run db:seed:clinic -w backend
 ```
 
-Important: running this seed command again replaces the existing clinic-information record with the values currently stored in `CLINIC_NAME` and `CLINIC_DESCRIPTION`.
+Important: running this seed command again replaces the existing clinic-information record with the values from the checked-in seed file.
+
+Before production deployment, update the seed file only with Product Owner-approved clinic copy.
 
 ## 9. Start the backend
 
@@ -183,7 +177,7 @@ Expected response shape:
 {
   "data": {
     "clinicName": "УЗД Експерт",
-    "description": "The approved clinic description"
+    "description": "Діагностичний центр ультразвукових досліджень."
   }
 }
 ```
@@ -366,11 +360,9 @@ Confirm that `DATABASE_URL` uses the development port `5434`, not the test datab
 
 ### API returns `CLINIC_INFORMATION_NOT_FOUND`
 
-The migration succeeded, but no clinic record exists. Set approved clinic content and rerun:
+The migration succeeded, but no clinic record exists. Rerun the checked-in clinic seed:
 
 ```powershell
-$env:CLINIC_NAME = 'УЗД Експерт'
-$env:CLINIC_DESCRIPTION = '<replace this with the approved clinic description>'
 npm run db:seed:clinic -w backend
 ```
 
