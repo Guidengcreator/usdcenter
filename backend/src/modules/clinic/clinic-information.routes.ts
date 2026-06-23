@@ -10,10 +10,15 @@ const clinicInformationResponseSchema = {
     data: {
       type: "object",
       additionalProperties: false,
-      required: ["clinicName", "description"],
+      required: ["clinicName", "description", "address", "phone", "email"],
       properties: {
         clinicName: { type: "string" },
         description: { type: "string" },
+        address: { type: "string" },
+        phone: { type: "string" },
+        email: {
+          anyOf: [{ type: "string" }, { type: "null" }],
+        },
       },
     },
   },

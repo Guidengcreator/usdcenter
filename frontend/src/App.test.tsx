@@ -19,6 +19,9 @@ describe("public clinic information", () => {
     getClinicInformationMock.mockResolvedValue({
       clinicName: "Test clinic",
       description: "Test ultrasound diagnostic services",
+      address: "Test street 1",
+      phone: "+380 44 123 45 67",
+      email: "info@testclinic.example",
     });
 
     render(<App />);
@@ -32,6 +35,14 @@ describe("public clinic information", () => {
     expect(
       screen.getByText("Test ultrasound diagnostic services"),
     ).toBeInTheDocument();
+    expect(screen.getByText("Test street 1")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "+380 44 123 45 67" })).toHaveAttribute(
+      "href",
+      "tel:+380441234567",
+    );
+    expect(
+      screen.getByRole("link", { name: "info@testclinic.example" }),
+    ).toHaveAttribute("href", "mailto:info@testclinic.example");
     expect(getClinicInformationMock).toHaveBeenCalledOnce();
   });
 });

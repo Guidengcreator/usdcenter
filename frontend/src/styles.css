@@ -154,6 +154,47 @@ a {
   overflow-wrap: anywhere;
 }
 
+.clinic-contact {
+  display: grid;
+  margin: clamp(2rem, 4vw, 3rem) 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.clinic-contact-item {
+  padding: 1rem 1.1rem 1.1rem;
+  background: rgb(255 255 255 / 56%);
+  border: 1px solid rgb(24 53 47 / 10%);
+  border-radius: 1rem;
+  box-shadow: 0 1rem 2.5rem rgb(24 53 47 / 6%);
+}
+
+.clinic-contact-item dt {
+  margin-bottom: 0.7rem;
+  color: #9a5c3f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.clinic-contact-item dd {
+  margin: 0;
+  color: #18352f;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.clinic-contact-item address {
+  font-style: normal;
+}
+
+.clinic-contact-item a {
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
 .error-state h1 {
   font-size: clamp(2.25rem, 5vw, 4.5rem);
 }
@@ -281,6 +322,10 @@ a {
     gap: 3rem;
   }
 
+  .clinic-contact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .visual-panel {
     width: min(86vw, 22rem);
   }
@@ -307,6 +352,10 @@ a {
   .clinic-copy h1,
   .error-state h1 {
     font-size: clamp(2.6rem, 15vw, 4.2rem);
+  }
+
+  .clinic-contact {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

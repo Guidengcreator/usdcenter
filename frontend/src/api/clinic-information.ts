@@ -1,6 +1,9 @@
 export interface ClinicInformation {
   clinicName: string;
   description: string;
+  address: string;
+  phone: string;
+  email: string | null;
 }
 
 interface ClinicInformationResponse {
@@ -22,7 +25,13 @@ function isClinicInformationResponse(
     "clinicName" in data &&
     typeof data.clinicName === "string" &&
     "description" in data &&
-    typeof data.description === "string"
+    typeof data.description === "string" &&
+    "address" in data &&
+    typeof data.address === "string" &&
+    "phone" in data &&
+    typeof data.phone === "string" &&
+    "email" in data &&
+    (typeof data.email === "string" || data.email === null)
   );
 }
 

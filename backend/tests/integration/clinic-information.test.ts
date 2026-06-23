@@ -28,6 +28,9 @@ describe("GET /api/v1/clinic-information", () => {
     await database.insert(clinicInformation).values({
       clinicName: "Test clinic",
       description: "Test ultrasound diagnostic services",
+      address: "Test street 1",
+      phone: "+380 44 123 45 67",
+      email: "info@testclinic.example",
     });
 
     const app = buildApp({ database });
@@ -44,6 +47,39 @@ describe("GET /api/v1/clinic-information", () => {
       data: {
         clinicName: "Test clinic",
         description: "Test ultrasound diagnostic services",
+        address: "Test street 1",
+        phone: "+380 44 123 45 67",
+        email: "info@testclinic.example",
+      },
+    });
+  });
+
+  it("returns a null email address when none is configured", async () => {
+    await database.insert(clinicInformation).values({
+      clinicName: "Test clinic",
+      description: "Test ultrasound diagnostic services",
+      address: "Test street 1",
+      phone: "+380 44 123 45 67",
+      email: null,
+    });
+
+    const app = buildApp({ database });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/clinic-information",
+    });
+
+    await app.close();
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      data: {
+        clinicName: "Test clinic",
+        description: "Test ultrasound diagnostic services",
+        address: "Test street 1",
+        phone: "+380 44 123 45 67",
+        email: null,
       },
     });
   });

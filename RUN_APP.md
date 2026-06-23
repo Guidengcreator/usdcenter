@@ -53,10 +53,10 @@ git branch --show-current
 git status --short
 ```
 
-The US-1.1 implementation is currently on:
+The US-1.2 implementation is currently on:
 
 ```text
-feature/us-1-1-view-clinic-information
+feature/us-1-2-address-contact-information
 ```
 
 ## 4. Install JavaScript dependencies
@@ -137,6 +137,8 @@ The seed data is checked in at:
 backend/src/db/seeds/clinic-information.seed.ts
 ```
 
+It contains the public clinic name, description, address, phone number, and email address.
+
 Seed the database:
 
 ```powershell
@@ -177,7 +179,10 @@ Expected response shape:
 {
   "data": {
     "clinicName": "УЗД Експерт",
-    "description": "Діагностичний центр ультразвукових досліджень."
+    "description": "Діагностичний центр ультразвукових досліджень.",
+    "address": "м. Київ, вул. Прикладна, 10",
+    "phone": "+380 44 123 45 67",
+    "email": "info@uzdexpert.ua"
   }
 }
 ```
@@ -397,3 +402,5 @@ docker compose -f .\infrastructure\compose.yaml down -v
 ```
 
 Warning: the `-v` option permanently deletes the local PostgreSQL volume. Afterward, repeat the database startup, migration, and seed steps.
+
+For US-1.2 specifically, you do not need to delete the volume. The migration backfills the new contact columns so existing US-1.1 data can stay in place.
