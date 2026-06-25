@@ -1,3 +1,4 @@
+import { AppointmentRequestSection } from "./components/AppointmentRequestSection.js";
 import { ClinicInformationSection } from "./components/ClinicInformationSection.js";
 import { useClinicInformation } from "./features/clinic/useClinicInformation.js";
 
@@ -18,6 +19,7 @@ export function App() {
 
       <main>
         <ClinicInformationSection state={clinicInformation} />
+        <AppointmentRequestSection />
       </main>
     </div>
   );

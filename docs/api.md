@@ -40,3 +40,51 @@ Status: `404 Not Found`
   }
 }
 ```
+
+## Public Appointment Requests
+
+### `POST /api/v1/appointment-requests`
+
+Submits a public appointment request without authentication.
+
+#### Request body
+
+```json
+{
+  "fullName": "Example Patient",
+  "phone": "+380 44 123 45 67",
+  "email": "patient@example.com",
+  "serviceType": "Abdominal ultrasound",
+  "comment": "Please call after 14:00"
+}
+```
+
+`fullName` and `phone` are required. `email`, `serviceType`, and `comment` are optional.
+
+#### Successful response
+
+Status: `201 Created`
+
+```json
+{
+  "data": {
+    "message": "Appointment request submitted successfully"
+  }
+}
+```
+
+#### Validation error
+
+Status: `400 Bad Request`
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request data",
+    "details": [
+      "body/fullName must NOT have fewer than 1 characters"
+    ]
+  }
+}
+```
