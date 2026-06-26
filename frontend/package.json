@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc --noEmit && vite build",
     "dev": "vite",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" \"vite.config.ts\"",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

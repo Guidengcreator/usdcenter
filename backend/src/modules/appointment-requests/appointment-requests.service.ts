@@ -8,6 +8,10 @@ export interface SubmitAppointmentRequestInput {
   serviceType?: string;
 }
 
+const invalidFullNameError = "body/fullName must NOT have fewer than 1 characters";
+const invalidPhoneRequiredError = "body/phone must NOT have fewer than 1 characters";
+const invalidPhoneFormatError = "body/phone must be a valid phone number";
+
 export class AppointmentRequestValidationError extends Error {
   public constructor(public readonly details: string[]) {
     super("Invalid request data");
@@ -27,11 +31,10 @@ export class AppointmentRequestsService {
     const phone = input.phone.trim();
 
     const details = [
-      ...(fullName.length === 0
-        ? ["body/fullName must NOT have fewer than 1 characters"]
-        : []),
-      ...(phone.length === 0
-        ? ["body/phone must NOT have fewer than 1 characters"]
+      ...(fullName.length === 0 ? [invalidFullNameError] : []),
+      ...(phone.length === 0 ? [invalidPhoneRequiredError] : []),
+      ...(phone.length > 0 && !isValidPhoneNumber(phone)
+        ? [invalidPhoneFormatError]
         : []),
     ];
 
@@ -58,4 +61,20 @@ function normalizeOptionalText(value: string | undefined): string | null {
   }
 
   return normalizedValue;
+}
+
+function isValidPhoneNumber(value: string): boolean {
+  if (/[^0-9+\s()-]/.test(value)) {
+    return false;
+  }
+
+  const plusMatches = value.match(/\+/g) ?? [];
+
+  if (plusMatches.length > 1 || (plusMatches.length === 1 && !value.startsWith("+"))) {
+    return false;
+  }
+
+  const digitsOnly = value.replace(/\D/g, "");
+
+  return digitsOnly.length >= 10 && digitsOnly.length <= 15;
 }

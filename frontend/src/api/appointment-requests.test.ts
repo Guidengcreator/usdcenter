@@ -79,4 +79,30 @@ describe("appointment requests API", () => {
       ]),
     );
   });
+
+  it("surfaces phone format validation details returned by the backend", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: vi.fn().mockResolvedValue({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid request data",
+          details: ["body/phone must be a valid phone number"],
+        },
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      submitAppointmentRequest({
+        fullName: "Test Patient",
+        phone: "abc123",
+      }),
+    ).rejects.toEqual(
+      new AppointmentRequestSubmissionError("Invalid request data", [
+        "body/phone must be a valid phone number",
+      ]),
+    );
+  });
 });
