@@ -93,4 +93,33 @@ describe("POST /api/v1/appointment-requests", () => {
 
     expect(storedRequests).toHaveLength(0);
   });
+
+  it("rejects a request with an invalid phone number format", async () => {
+    const app = buildApp({ database });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/appointment-requests",
+      payload: {
+        fullName: "Test Patient",
+        phone: "abc123",
+        email: "patient@example.com",
+      },
+    });
+
+    await app.close();
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Invalid request data",
+        details: ["body/phone must be a valid phone number"],
+      },
+    });
+
+    const storedRequests = await database.select().from(appointmentRequests);
+
+    expect(storedRequests).toHaveLength(0);
+  });
 });

@@ -63,7 +63,7 @@ export function AppointmentRequestSection() {
       setConfirmationMessage(result.message);
     } catch (error: unknown) {
       if (error instanceof AppointmentRequestSubmissionError) {
-        setSubmitError(error.details[0] ?? error.message);
+        setSubmitError(mapSubmissionError(error));
       } else {
         setSubmitError("Не вдалося надіслати запит. Спробуйте ще раз.");
       }
@@ -200,7 +200,43 @@ function validate(values: FormValues): FormErrors {
 
   if (values.phone.trim().length === 0) {
     errors.phone = "Вкажіть номер телефону.";
+  } else if (!isValidPhoneNumber(values.phone)) {
+    errors.phone = "Вкажіть номер телефону у правильному форматі.";
   }
 
   return errors;
+}
+
+function isValidPhoneNumber(value: string): boolean {
+  if (/[^0-9+\s()-]/.test(value)) {
+    return false;
+  }
+
+  const plusMatches = value.match(/\+/g) ?? [];
+
+  if (plusMatches.length > 1 || (plusMatches.length === 1 && !value.startsWith("+"))) {
+    return false;
+  }
+
+  const digitsOnly = value.replace(/\D/g, "");
+
+  return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+}
+
+function mapSubmissionError(error: AppointmentRequestSubmissionError): string {
+  const firstDetail = error.details[0];
+
+  if (firstDetail === "body/fullName must NOT have fewer than 1 characters") {
+    return "Вкажіть повне ім'я.";
+  }
+
+  if (firstDetail === "body/phone must NOT have fewer than 1 characters") {
+    return "Вкажіть номер телефону.";
+  }
+
+  if (firstDetail === "body/phone must be a valid phone number") {
+    return "Вкажіть номер телефону у правильному форматі.";
+  }
+
+  return error.message;
 }

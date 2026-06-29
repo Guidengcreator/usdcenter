@@ -84,6 +84,34 @@ describe("public clinic information", () => {
     expect(submitAppointmentRequestMock).not.toHaveBeenCalled();
   });
 
+  it("validates the phone number format on the client", async () => {
+    getClinicInformationMock.mockResolvedValue({
+      clinicName: "Test clinic",
+      description: "Test ultrasound diagnostic services",
+      address: "Test street 1",
+      phone: "+380 44 123 45 67",
+      email: "info@testclinic.example",
+      workingHours: "Mon-Fri: 09:00-18:00",
+    });
+
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Test clinic" });
+
+    fireEvent.change(screen.getByLabelText("Повне ім'я"), {
+      target: { value: "Test Patient" },
+    });
+    fireEvent.change(screen.getByLabelText("Телефон"), {
+      target: { value: "abc123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Надіслати запит" }));
+
+    expect(
+      screen.getByText("Вкажіть номер телефону у правильному форматі."),
+    ).toBeInTheDocument();
+    expect(submitAppointmentRequestMock).not.toHaveBeenCalled();
+  });
+
   it("submits the appointment request and shows the confirmation message", async () => {
     getClinicInformationMock.mockResolvedValue({
       clinicName: "Test clinic",

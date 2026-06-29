@@ -59,7 +59,7 @@ Submits a public appointment request without authentication.
 }
 ```
 
-`fullName` and `phone` are required. `email`, `serviceType`, and `comment` are optional.
+`fullName` and `phone` are required. `phone` must contain 10 to 15 digits and may include a leading `+`, spaces, parentheses, or hyphens. `email`, `serviceType`, and `comment` are optional.
 
 #### Successful response
 
@@ -83,7 +83,7 @@ Status: `400 Bad Request`
     "code": "VALIDATION_ERROR",
     "message": "Invalid request data",
     "details": [
-      "body/fullName must NOT have fewer than 1 characters"
+      "body/phone must be a valid phone number"
     ]
   }
 }
