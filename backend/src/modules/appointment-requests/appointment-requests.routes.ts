@@ -5,7 +5,6 @@ import type { AppointmentRequestsService } from "./appointment-requests.service.
 const submitAppointmentRequestBodySchema = {
   type: "object",
   additionalProperties: false,
-  required: ["fullName", "phone"],
   properties: {
     fullName: { type: "string" },
     phone: { type: "string" },
@@ -49,8 +48,8 @@ export function registerAppointmentRequestsRoutes(
       const body = request.body as {
         comment?: string;
         email?: string;
-        fullName: string;
-        phone: string;
+        fullName?: string;
+        phone?: string;
         serviceType?: string;
       };
 

@@ -88,7 +88,7 @@ describe("appointment requests API", () => {
         error: {
           code: "VALIDATION_ERROR",
           message: "Invalid request data",
-          details: ["body/phone must be a valid phone number"],
+          details: ["body/phone must be a valid Ukrainian phone number"],
         },
       }),
     });
@@ -101,7 +101,7 @@ describe("appointment requests API", () => {
       }),
     ).rejects.toEqual(
       new AppointmentRequestSubmissionError("Invalid request data", [
-        "body/phone must be a valid phone number",
+        "body/phone must be a valid Ukrainian phone number",
       ]),
     );
   });
