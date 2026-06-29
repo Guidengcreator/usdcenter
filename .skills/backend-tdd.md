@@ -14,10 +14,11 @@ Use this skill when implementing backend behavior for an approved user story.
 Backend work must follow:
 
 ```text
-User Story -> Acceptance Criteria -> Gherkin Scenarios -> Integration API Tests -> Implementation
+User Story -> Acceptance Criteria -> Test Case Scope Matrix -> Gherkin Scenarios -> Integration API Tests -> Implementation
 ```
 
 Do not implement backend behavior until the Gherkin specification and failing integration tests exist.
+Do not implement backend validation from only one or two sample inputs. First enumerate the accepted, rejected, and boundary input classes required by the story.
 
 ## Project Constraints
 
@@ -35,12 +36,39 @@ Do not implement backend behavior until the Gherkin specification and failing in
 
 1. Read the target user story and acceptance criteria.
 2. Read the related Gherkin scenarios.
-3. Create or update integration API tests from those scenarios.
-4. Run the test and confirm it fails for the expected reason.
-5. Implement the smallest backend change needed.
-6. Run the test and confirm it passes.
-7. Add edge-case tests for validation, authorization, and persistence risks.
-8. Refactor only when it improves clarity without changing behavior.
+3. Verify the Gherkin scenarios came from a test case scope matrix. If not, create or update the matrix and scenarios first.
+4. Create or update integration API tests from every matrix row and Gherkin example that describes backend-observable behavior.
+5. Run the test and confirm it fails for the expected reason.
+6. Implement the smallest backend change needed.
+7. Run the test and confirm it passes.
+8. Add edge-case tests for validation, authorization, and persistence risks if the matrix exposed any missing cases.
+9. Refactor only when it improves clarity without changing behavior.
+
+## Backend Validation Test Matrix
+
+For every backend endpoint that validates input, include tests for relevant cases:
+
+- required field omitted,
+- required field empty,
+- required field whitespace-only,
+- wrong JSON type when route schema should reject it,
+- unsupported extra field when the API contract forbids it,
+- valid boundary values,
+- invalid boundary values just outside the allowed range or format,
+- malformed values that are superficially similar to valid values,
+- unsupported characters or separators,
+- duplicate or conflicting values when relevant,
+- normalization before persistence or response,
+- no persistence for invalid requests,
+- structured error response for invalid requests.
+
+Backend tests must assert observable behavior:
+
+- HTTP status code,
+- response body success or error shape,
+- validation error details when meaningful,
+- database state after success,
+- database state after rejection.
 
 ## Test Expectations
 
@@ -49,6 +77,8 @@ Do not implement backend behavior until the Gherkin specification and failing in
 - Use an isolated PostgreSQL test database.
 - Verify HTTP status codes, response bodies, validation errors, and persisted state.
 - Avoid testing implementation details that are not observable through the API.
+- Prefer `it.each` or Scenario Outline-equivalent tables for validation input classes.
+- Keep reusable test helpers local and explicit when they make the matrix easier to audit.
 
 ## Security Checks
 
@@ -62,6 +92,10 @@ Do not implement backend behavior until the Gherkin specification and failing in
 
 - Integration tests fail before implementation and pass after implementation.
 - All acceptance criteria are covered.
+- All backend-observable matrix rows have integration API tests.
+- Validation tests cover accepted, rejected, and boundary input classes.
+- Invalid requests verify no unintended database writes.
+- Normalized values are asserted after persistence when normalization exists.
 - Drizzle is used for database access.
 - No Release 1 exclusions are added.
 - Documentation is updated if API or architecture changed.
