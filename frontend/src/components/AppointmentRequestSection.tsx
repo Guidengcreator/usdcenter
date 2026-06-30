@@ -200,14 +200,14 @@ function validate(values: FormValues): FormErrors {
 
   if (values.phone.trim().length === 0) {
     errors.phone = "Вкажіть номер телефону.";
-  } else if (!isValidPhoneNumber(values.phone)) {
+  } else if (!isValidUkrainianPhoneNumber(values.phone)) {
     errors.phone = "Вкажіть номер телефону у правильному форматі.";
   }
 
   return errors;
 }
 
-function isValidPhoneNumber(value: string): boolean {
+function isValidUkrainianPhoneNumber(value: string): boolean {
   if (/[^0-9+\s()-]/.test(value)) {
     return false;
   }
@@ -220,7 +220,11 @@ function isValidPhoneNumber(value: string): boolean {
 
   const digitsOnly = value.replace(/\D/g, "");
 
-  return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+  if (value.startsWith("+")) {
+    return digitsOnly.length === 12 && digitsOnly.startsWith("380");
+  }
+
+  return digitsOnly.length === 10 && digitsOnly.startsWith("0");
 }
 
 function mapSubmissionError(error: AppointmentRequestSubmissionError): string {
@@ -234,7 +238,10 @@ function mapSubmissionError(error: AppointmentRequestSubmissionError): string {
     return "Вкажіть номер телефону.";
   }
 
-  if (firstDetail === "body/phone must be a valid phone number") {
+  if (
+    firstDetail === "body/phone must be a valid phone number" ||
+    firstDetail === "body/phone must be a valid Ukrainian phone number"
+  ) {
     return "Вкажіть номер телефону у правильному форматі.";
   }
 

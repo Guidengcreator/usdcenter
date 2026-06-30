@@ -3,14 +3,15 @@ import type { AppointmentRequestsRepository } from "./appointment-requests.repos
 export interface SubmitAppointmentRequestInput {
   comment?: string;
   email?: string;
-  fullName: string;
-  phone: string;
+  fullName?: string;
+  phone?: string;
   serviceType?: string;
 }
 
 const invalidFullNameError = "body/fullName must NOT have fewer than 1 characters";
 const invalidPhoneRequiredError = "body/phone must NOT have fewer than 1 characters";
-const invalidPhoneFormatError = "body/phone must be a valid phone number";
+const invalidPhoneFormatError =
+  "body/phone must be a valid Ukrainian phone number";
 
 export class AppointmentRequestValidationError extends Error {
   public constructor(public readonly details: string[]) {
@@ -27,13 +28,14 @@ export class AppointmentRequestsService {
   public async submitAppointmentRequest(
     input: SubmitAppointmentRequestInput,
   ): Promise<void> {
-    const fullName = input.fullName.trim();
-    const phone = input.phone.trim();
+    const fullName = input.fullName?.trim() ?? "";
+    const phone = input.phone?.trim() ?? "";
+    const normalizedPhone = normalizeUkrainianPhoneNumber(phone);
 
     const details = [
       ...(fullName.length === 0 ? [invalidFullNameError] : []),
       ...(phone.length === 0 ? [invalidPhoneRequiredError] : []),
-      ...(phone.length > 0 && !isValidPhoneNumber(phone)
+      ...(phone.length > 0 && normalizedPhone === null
         ? [invalidPhoneFormatError]
         : []),
     ];
@@ -42,9 +44,13 @@ export class AppointmentRequestsService {
       throw new AppointmentRequestValidationError(details);
     }
 
+    if (normalizedPhone === null) {
+      throw new AppointmentRequestValidationError([invalidPhoneFormatError]);
+    }
+
     await this.appointmentRequestsRepository.create({
       fullName,
-      phone,
+      phone: normalizedPhone,
       email: normalizeOptionalText(input.email),
       serviceType: normalizeOptionalText(input.serviceType),
       comment: normalizeOptionalText(input.comment),
@@ -63,18 +69,26 @@ function normalizeOptionalText(value: string | undefined): string | null {
   return normalizedValue;
 }
 
-function isValidPhoneNumber(value: string): boolean {
+function normalizeUkrainianPhoneNumber(value: string): string | null {
   if (/[^0-9+\s()-]/.test(value)) {
-    return false;
+    return null;
   }
 
   const plusMatches = value.match(/\+/g) ?? [];
 
   if (plusMatches.length > 1 || (plusMatches.length === 1 && !value.startsWith("+"))) {
-    return false;
+    return null;
   }
 
   const digitsOnly = value.replace(/\D/g, "");
 
-  return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+  if (value.startsWith("+")) {
+    return digitsOnly.length === 12 && digitsOnly.startsWith("380")
+      ? `+${digitsOnly}`
+      : null;
+  }
+
+  return digitsOnly.length === 10 && digitsOnly.startsWith("0")
+    ? `+38${digitsOnly}`
+    : null;
 }

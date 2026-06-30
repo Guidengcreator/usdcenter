@@ -25,8 +25,9 @@ AI agents may propose documentation changes but may not approve new requirements
 2. Check whether the change is already approved by Product Owner or Tech Lead when approval is required.
 3. Update the smallest necessary documentation set.
 4. Keep wording consistent between GitHub issues, feature documents, Gherkin scenarios, and tests.
-5. Do not add unapproved requirements while improving documentation.
-6. Re-check Release 1 exclusions.
+5. For validation behavior, keep accepted input classes, rejected input classes, boundary rules, normalization rules, persistence expectations, and API error responses synchronized.
+6. Do not add unapproved requirements while improving documentation.
+7. Re-check Release 1 exclusions.
 
 ## When To Update
 
@@ -36,11 +37,16 @@ AI agents may propose documentation changes but may not approve new requirements
 - New API introduced: update API documentation.
 - API behavior changed: update API documentation and integration tests.
 - Gherkin changed: verify it still maps to acceptance criteria.
+- Validation rule changed: update Features/User Stories when the rule is a requirement, Gherkin examples, API docs, and integration tests.
+- Normalization or persistence behavior changed: update Technical Design or API docs when externally observable, plus Gherkin and tests.
 
 ## Review Checklist
 
 - Documentation and implementation describe the same behavior.
 - Every acceptance criterion has at least one Gherkin scenario.
+- Validation-heavy stories document all accepted, rejected, and boundary input classes in Gherkin.
+- Normalization rules in documentation match persisted data and API behavior.
+- Error response documentation matches tests.
 - API docs use `/api/v1` routes.
 - Public and admin behavior are documented separately.
 - Release 1 exclusions remain excluded.
