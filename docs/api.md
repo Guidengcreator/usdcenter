@@ -46,6 +46,7 @@ Status: `404 Not Found`
 ### `POST /api/v1/appointment-requests`
 
 Submits a public appointment request without authentication.
+The endpoint is protected by rate limiting. Excessive requests from the same client are rejected with `429 Too Many Requests`.
 
 #### Request body
 
@@ -85,6 +86,26 @@ Status: `400 Bad Request`
     "details": [
       "body/phone must be a valid phone number"
     ]
+  }
+}
+```
+
+#### Rate limit exceeded
+
+Status: `429 Too Many Requests`
+
+Header:
+
+```text
+Retry-After: <seconds>
+```
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many appointment requests. Please try again later.",
+    "details": []
   }
 }
 ```

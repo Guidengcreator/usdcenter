@@ -238,5 +238,9 @@ function mapSubmissionError(error: AppointmentRequestSubmissionError): string {
     return "Вкажіть номер телефону у правильному форматі.";
   }
 
+  if (error.message === "Too many appointment requests. Please try again later.") {
+    return "Забагато запитів. Спробуйте ще раз пізніше.";
+  }
+
   return error.message;
 }

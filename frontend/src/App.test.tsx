@@ -1,13 +1,23 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { submitAppointmentRequest } from "./api/appointment-requests.js";
+import {
+  AppointmentRequestSubmissionError,
+  submitAppointmentRequest,
+} from "./api/appointment-requests.js";
 import { getClinicInformation } from "./api/clinic-information.js";
 import { App } from "./App.js";
 
-vi.mock("./api/appointment-requests.js", () => ({
-  submitAppointmentRequest: vi.fn(),
-}));
+vi.mock("./api/appointment-requests.js", async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import("./api/appointment-requests.js")
+  >();
+
+  return {
+    ...actual,
+    submitAppointmentRequest: vi.fn(),
+  };
+});
 
 vi.mock("./api/clinic-information.js", () => ({
   getClinicInformation: vi.fn(),
@@ -152,6 +162,38 @@ describe("public clinic information", () => {
     });
     expect(
       await screen.findByText("Appointment request submitted successfully"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a helpful message when the backend rate limit is exceeded", async () => {
+    getClinicInformationMock.mockResolvedValue({
+      clinicName: "Test clinic",
+      description: "Test ultrasound diagnostic services",
+      address: "Test street 1",
+      phone: "+380 44 123 45 67",
+      email: "info@testclinic.example",
+      workingHours: "Mon-Fri: 09:00-18:00",
+    });
+    submitAppointmentRequestMock.mockRejectedValue(
+      new AppointmentRequestSubmissionError(
+        "Too many appointment requests. Please try again later.",
+      ),
+    );
+
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Test clinic" });
+
+    fireEvent.change(screen.getByLabelText("Повне ім'я"), {
+      target: { value: "Test Patient" },
+    });
+    fireEvent.change(screen.getByLabelText("Телефон"), {
+      target: { value: "+380 44 123 45 67" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Надіслати запит" }));
+
+    expect(
+      await screen.findByText("Забагато запитів. Спробуйте ще раз пізніше."),
     ).toBeInTheDocument();
   });
 });

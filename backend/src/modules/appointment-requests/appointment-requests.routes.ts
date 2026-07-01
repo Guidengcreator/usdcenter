@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 
+import type { AppointmentRequestsRateLimiter } from "./appointment-requests-rate-limiter.js";
 import type { AppointmentRequestsService } from "./appointment-requests.service.js";
 
 const submitAppointmentRequestBodySchema = {
@@ -34,6 +35,7 @@ const submitAppointmentRequestResponseSchema = {
 export function registerAppointmentRequestsRoutes(
   app: FastifyInstance,
   appointmentRequestsService: AppointmentRequestsService,
+  appointmentRequestsRateLimiter: AppointmentRequestsRateLimiter,
 ): void {
   app.post(
     "/api/v1/appointment-requests",
@@ -54,6 +56,7 @@ export function registerAppointmentRequestsRoutes(
         serviceType?: string;
       };
 
+      appointmentRequestsRateLimiter.check(request.ip);
       await appointmentRequestsService.submitAppointmentRequest(body);
 
       return reply.status(201).send({

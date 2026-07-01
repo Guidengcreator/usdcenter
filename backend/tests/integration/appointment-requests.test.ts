@@ -1,5 +1,5 @@
 import { migrate } from "drizzle-orm/postgres-js/migrator";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "../../src/app.js";
 import { createDatabase } from "../../src/db/database.js";
@@ -121,5 +121,80 @@ describe("POST /api/v1/appointment-requests", () => {
     const storedRequests = await database.select().from(appointmentRequests);
 
     expect(storedRequests).toHaveLength(0);
+  });
+
+  it("rejects excessive appointment requests with a rate limit error", async () => {
+    const app = buildApp({ database });
+
+    for (let index = 0; index < 3; index += 1) {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/v1/appointment-requests",
+        payload: {
+          fullName: `Test Patient ${index + 1}`,
+          phone: `+380 44 123 45 6${index + 1}`,
+        },
+      });
+
+      expect(response.statusCode).toBe(201);
+    }
+
+    const excessiveResponse = await app.inject({
+      method: "POST",
+      url: "/api/v1/appointment-requests",
+      payload: {
+        fullName: "Blocked Patient",
+        phone: "+380 44 123 45 69",
+      },
+    });
+
+    await app.close();
+
+    expect(excessiveResponse.statusCode).toBe(429);
+    expect(excessiveResponse.json()).toEqual({
+      error: {
+        code: "RATE_LIMIT_EXCEEDED",
+        message: "Too many appointment requests. Please try again later.",
+        details: [],
+      },
+    });
+
+    const storedRequests = await database.select().from(appointmentRequests);
+
+    expect(storedRequests).toHaveLength(3);
+  });
+
+  it("logs suspicious activity when the appointment request rate limit is exceeded", async () => {
+    const app = buildApp({ database });
+    const warnSpy = vi.spyOn(app.log, "warn");
+
+    for (let index = 0; index < 3; index += 1) {
+      await app.inject({
+        method: "POST",
+        url: "/api/v1/appointment-requests",
+        payload: {
+          fullName: `Test Patient ${index + 1}`,
+          phone: `+380 44 123 45 6${index + 1}`,
+        },
+      });
+    }
+
+    await app.inject({
+      method: "POST",
+      url: "/api/v1/appointment-requests",
+      payload: {
+        fullName: "Blocked Patient",
+        phone: "+380 44 123 45 69",
+      },
+    });
+
+    await app.close();
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clientKey: "127.0.0.1",
+      }),
+      "Appointment request rate limit exceeded",
+    );
   });
 });

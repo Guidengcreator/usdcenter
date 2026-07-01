@@ -3,6 +3,10 @@ import Fastify from "fastify";
 import type { FastifySchemaValidationError } from "fastify/types/schema.js";
 
 import type { Database } from "./db/database.js";
+import {
+  AppointmentRequestRateLimitError,
+  AppointmentRequestsRateLimiter,
+} from "./modules/appointment-requests/appointment-requests-rate-limiter.js";
 import { AppointmentRequestsRepository } from "./modules/appointment-requests/appointment-requests.repository.js";
 import { registerAppointmentRequestsRoutes } from "./modules/appointment-requests/appointment-requests.routes.js";
 import {
@@ -36,6 +40,7 @@ export function buildApp({
   const appointmentRequestsRepository = new AppointmentRequestsRepository(
     database,
   );
+  const appointmentRequestsRateLimiter = new AppointmentRequestsRateLimiter();
   const appointmentRequestsService = new AppointmentRequestsService(
     appointmentRequestsRepository,
   );
@@ -44,10 +49,35 @@ export function buildApp({
     clinicInformationRepository,
   );
 
-  registerAppointmentRequestsRoutes(app, appointmentRequestsService);
+  registerAppointmentRequestsRoutes(
+    app,
+    appointmentRequestsService,
+    appointmentRequestsRateLimiter,
+  );
   registerClinicInformationRoutes(app, clinicInformationService);
 
   app.setErrorHandler((error, request, reply) => {
+    if (error instanceof AppointmentRequestRateLimitError) {
+      request.server.log.warn(
+        {
+          clientKey: error.clientKey,
+          retryAfterSeconds: error.retryAfterSeconds,
+        },
+        "Appointment request rate limit exceeded",
+      );
+
+      return reply
+        .status(429)
+        .header("retry-after", String(error.retryAfterSeconds))
+        .send({
+          error: {
+            code: "RATE_LIMIT_EXCEEDED",
+            message: error.message,
+            details: [],
+          },
+        });
+    }
+
     if (error instanceof AppointmentRequestValidationError) {
       return reply.status(400).send({
         error: {

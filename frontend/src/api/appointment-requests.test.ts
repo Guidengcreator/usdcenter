@@ -105,4 +105,31 @@ describe("appointment requests API", () => {
       ]),
     );
   });
+
+  it("surfaces rate limit errors returned by the backend", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+      json: vi.fn().mockResolvedValue({
+        error: {
+          code: "RATE_LIMIT_EXCEEDED",
+          message: "Too many appointment requests. Please try again later.",
+          details: [],
+        },
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      submitAppointmentRequest({
+        fullName: "Test Patient",
+        phone: "+380 44 123 45 67",
+      }),
+    ).rejects.toEqual(
+      new AppointmentRequestSubmissionError(
+        "Too many appointment requests. Please try again later.",
+        [],
+      ),
+    );
+  });
 });
