@@ -245,6 +245,18 @@ Application configuration is managed through environment variables.
 
 Secrets must never be stored in source code repositories.
 
+For local development, non-secret default configuration is committed in
+environment-specific development files:
+
+- `backend/.env.development`
+- `frontend/.env.development`
+
+Backend development scripts load `backend/.env.development` before running the
+local server, Drizzle, migration, and seed commands. Vite loads
+`frontend/.env.development` for frontend development commands. Production
+configuration remains environment-based and must be provided by the deployment
+platform or secret-management mechanism.
+
 ---
 
 ## 4. Domain Model
