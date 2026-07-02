@@ -3,6 +3,7 @@ export interface Environment {
   databaseUrl: string;
   host: string;
   port: number;
+  trustProxy: boolean;
 }
 
 export function readEnvironment(
@@ -25,5 +26,6 @@ export function readEnvironment(
     databaseUrl,
     host: environment.HOST ?? "127.0.0.1",
     port,
+    trustProxy: environment.TRUST_PROXY === "true",
   };
 }

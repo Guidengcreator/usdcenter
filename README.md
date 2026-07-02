@@ -31,6 +31,8 @@ $env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
 $env:CORS_ORIGIN = 'http://localhost:5173'
 ```
 
+Set `TRUST_PROXY=true` only in deployments where the backend runs behind a trusted reverse proxy that provides the real client IP in forwarding headers.
+
 Apply migrations:
 
 ```powershell

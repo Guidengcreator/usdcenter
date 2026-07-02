@@ -109,6 +109,8 @@ $env:HOST = '127.0.0.1'
 $env:PORT = '3000'
 ```
 
+Leave `TRUST_PROXY` unset for local development. Set `$env:TRUST_PROXY = 'true'` only when the backend runs behind a trusted reverse proxy that provides the real client IP in forwarding headers.
+
 Confirm the non-secret runtime settings if needed:
 
 ```powershell

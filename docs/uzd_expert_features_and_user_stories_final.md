@@ -96,10 +96,11 @@ As a clinic administrator, I want appointment requests to be protected from spam
 
 ### Acceptance Criteria
 
-- Rate limiting is enabled for appointment request API endpoints.
-- Excessive requests are rejected.
-- Suspicious requests are logged.
-- Spam protection works independently of frontend validation.
+- Appointment request submissions are limited to 5 requests per source IP within a rolling 15-minute window.
+- Excessive requests are rejected with HTTP 429 Too Many Requests.
+- Rate limit responses include a correct Retry-After response header.
+- Rate-limited appointment requests are logged without storing sensitive form data in logs.
+- Spam protection works entirely on the backend and independently of frontend validation.
 
 ---
 
@@ -246,4 +247,3 @@ As a system, I want protected API endpoints to require authentication so that se
 - Unauthorized requests return HTTP 401 or 403 responses.
 - Public endpoints remain accessible without login.
 - Authentication is validated on the backend.
-

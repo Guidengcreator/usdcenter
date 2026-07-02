@@ -46,7 +46,7 @@ Status: `404 Not Found`
 ### `POST /api/v1/appointment-requests`
 
 Submits a public appointment request without authentication.
-The endpoint is protected by rate limiting. Excessive requests from the same client are rejected with `429 Too Many Requests`.
+The endpoint is protected by backend rate limiting. Requests are limited to 5 submissions per source IP within a rolling 15-minute window. Excessive requests from the same source IP are rejected with `429 Too Many Requests`.
 
 #### Request body
 
@@ -99,6 +99,8 @@ Header:
 ```text
 Retry-After: <seconds>
 ```
+
+`Retry-After` contains the number of seconds until the source IP can submit another appointment request.
 
 ```json
 {

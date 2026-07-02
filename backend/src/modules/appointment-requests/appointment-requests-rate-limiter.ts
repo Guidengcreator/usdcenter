@@ -1,17 +1,26 @@
-const defaultWindowMs = 60_000;
-const defaultMaxRequests = 3;
+const defaultWindowMs = 15 * 60 * 1000;
+const defaultMaxRequests = 5;
 
-export class AppointmentRequestRateLimitError extends Error {
-  public constructor(
-    public readonly clientKey: string,
-    public readonly retryAfterSeconds: number,
-  ) {
-    super("Too many appointment requests. Please try again later.");
-    this.name = "AppointmentRequestRateLimitError";
-  }
+export interface AppointmentRequestRateLimitAllowed {
+  allowed: true;
 }
 
-export class AppointmentRequestsRateLimiter {
+export interface AppointmentRequestRateLimitRejected {
+  allowed: false;
+  retryAfterSeconds: number;
+}
+
+export type AppointmentRequestRateLimitResult =
+  | AppointmentRequestRateLimitAllowed
+  | AppointmentRequestRateLimitRejected;
+
+export interface AppointmentRequestsRateLimiter {
+  consume(sourceIp: string): AppointmentRequestRateLimitResult;
+}
+
+export class InMemoryAppointmentRequestsRateLimiter
+  implements AppointmentRequestsRateLimiter
+{
   private readonly requestsByClient = new Map<string, number[]>();
 
   public constructor(
@@ -20,25 +29,33 @@ export class AppointmentRequestsRateLimiter {
     private readonly now: () => number = () => Date.now(),
   ) {}
 
-  public check(clientKey: string): void {
+  public consume(sourceIp: string): AppointmentRequestRateLimitResult {
     const currentTime = this.now();
-    const activeTimestamps = (
-      this.requestsByClient.get(clientKey) ?? []
-    ).filter((timestamp) => currentTime - timestamp < this.windowMs);
+    const windowStart = currentTime - this.windowMs;
+    const activeTimestamps = (this.requestsByClient.get(sourceIp) ?? []).filter(
+      (timestamp) => timestamp > windowStart,
+    );
 
     if (activeTimestamps.length >= this.maxRequests) {
       const oldestTimestamp = activeTimestamps[0] ?? currentTime;
       const retryAfterSeconds = Math.max(
         1,
-        Math.ceil((this.windowMs - (currentTime - oldestTimestamp)) / 1000),
+        Math.ceil((oldestTimestamp + this.windowMs - currentTime) / 1000),
       );
 
-      this.requestsByClient.set(clientKey, activeTimestamps);
+      this.requestsByClient.set(sourceIp, activeTimestamps);
 
-      throw new AppointmentRequestRateLimitError(clientKey, retryAfterSeconds);
+      return {
+        allowed: false,
+        retryAfterSeconds,
+      };
     }
 
     activeTimestamps.push(currentTime);
-    this.requestsByClient.set(clientKey, activeTimestamps);
+    this.requestsByClient.set(sourceIp, activeTimestamps);
+
+    return {
+      allowed: true,
+    };
   }
 }

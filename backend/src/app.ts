@@ -4,8 +4,8 @@ import type { FastifySchemaValidationError } from "fastify/types/schema.js";
 
 import type { Database } from "./db/database.js";
 import {
-  AppointmentRequestRateLimitError,
-  AppointmentRequestsRateLimiter,
+  InMemoryAppointmentRequestsRateLimiter,
+  type AppointmentRequestsRateLimiter,
 } from "./modules/appointment-requests/appointment-requests-rate-limiter.js";
 import { AppointmentRequestsRepository } from "./modules/appointment-requests/appointment-requests.repository.js";
 import { registerAppointmentRequestsRoutes } from "./modules/appointment-requests/appointment-requests.routes.js";
@@ -21,17 +21,21 @@ import {
 } from "./modules/clinic/clinic-information.service.js";
 
 interface BuildAppDependencies {
+  appointmentRequestsRateLimiter?: AppointmentRequestsRateLimiter;
   corsOrigin?: string;
   database: Database;
   logger?: boolean;
+  trustProxy?: boolean;
 }
 
 export function buildApp({
+  appointmentRequestsRateLimiter,
   corsOrigin,
   database,
   logger = false,
+  trustProxy = false,
 }: BuildAppDependencies) {
-  const app = Fastify({ logger });
+  const app = Fastify({ logger, trustProxy });
 
   if (corsOrigin) {
     void app.register(cors, { origin: corsOrigin });
@@ -40,7 +44,8 @@ export function buildApp({
   const appointmentRequestsRepository = new AppointmentRequestsRepository(
     database,
   );
-  const appointmentRequestsRateLimiter = new AppointmentRequestsRateLimiter();
+  const rateLimiter =
+    appointmentRequestsRateLimiter ?? new InMemoryAppointmentRequestsRateLimiter();
   const appointmentRequestsService = new AppointmentRequestsService(
     appointmentRequestsRepository,
   );
@@ -52,32 +57,11 @@ export function buildApp({
   registerAppointmentRequestsRoutes(
     app,
     appointmentRequestsService,
-    appointmentRequestsRateLimiter,
+    rateLimiter,
   );
   registerClinicInformationRoutes(app, clinicInformationService);
 
   app.setErrorHandler((error, request, reply) => {
-    if (error instanceof AppointmentRequestRateLimitError) {
-      request.server.log.warn(
-        {
-          clientKey: error.clientKey,
-          retryAfterSeconds: error.retryAfterSeconds,
-        },
-        "Appointment request rate limit exceeded",
-      );
-
-      return reply
-        .status(429)
-        .header("retry-after", String(error.retryAfterSeconds))
-        .send({
-          error: {
-            code: "RATE_LIMIT_EXCEEDED",
-            message: error.message,
-            details: [],
-          },
-        });
-    }
-
     if (error instanceof AppointmentRequestValidationError) {
       return reply.status(400).send({
         error: {

@@ -32,6 +32,27 @@ const submitAppointmentRequestResponseSchema = {
   },
 } as const;
 
+const appointmentRequestRateLimitResponseSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["error"],
+  properties: {
+    error: {
+      type: "object",
+      additionalProperties: false,
+      required: ["code", "message", "details"],
+      properties: {
+        code: { type: "string" },
+        message: { type: "string" },
+        details: {
+          type: "array",
+          items: { type: "string" },
+        },
+      },
+    },
+  },
+} as const;
+
 export function registerAppointmentRequestsRoutes(
   app: FastifyInstance,
   appointmentRequestsService: AppointmentRequestsService,
@@ -44,10 +65,36 @@ export function registerAppointmentRequestsRoutes(
         body: submitAppointmentRequestBodySchema,
         response: {
           201: submitAppointmentRequestResponseSchema,
+          429: appointmentRequestRateLimitResponseSchema,
         },
       },
     },
     async (request, reply) => {
+      const sourceIp = request.ip;
+      const rateLimitResult = appointmentRequestsRateLimiter.consume(sourceIp);
+
+      if (!rateLimitResult.allowed) {
+        request.log.warn(
+          {
+            sourceIp,
+            retryAfterSeconds: rateLimitResult.retryAfterSeconds,
+            route: "/api/v1/appointment-requests",
+          },
+          "Appointment request rate limit exceeded",
+        );
+
+        return reply
+          .status(429)
+          .header("retry-after", String(rateLimitResult.retryAfterSeconds))
+          .send({
+            error: {
+              code: "RATE_LIMIT_EXCEEDED",
+              message: "Too many appointment requests. Please try again later.",
+              details: [],
+            },
+          });
+      }
+
       const body = request.body as {
         comment?: string;
         email?: string;
@@ -56,7 +103,6 @@ export function registerAppointmentRequestsRoutes(
         serviceType?: string;
       };
 
-      appointmentRequestsRateLimiter.check(request.ip);
       await appointmentRequestsService.submitAppointmentRequest(body);
 
       return reply.status(201).send({
