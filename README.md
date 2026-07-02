@@ -24,12 +24,10 @@ Start the development and isolated test databases:
 docker compose -f infrastructure/compose.yaml up -d postgres postgres-test
 ```
 
-Configure the backend in the current shell:
-
-```powershell
-$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
-$env:CORS_ORIGIN = 'http://localhost:5173'
-```
+Local development configuration is committed in `backend/.env.development` and
+`frontend/.env.development`. Backend scripts load `backend/.env.development`
+automatically, and Vite loads `frontend/.env.development` automatically for the
+frontend development server.
 
 Apply migrations:
 

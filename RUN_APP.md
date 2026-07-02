@@ -98,30 +98,32 @@ If it does not become healthy, inspect its logs:
 docker compose -f .\infrastructure\compose.yaml logs postgres
 ```
 
-## 6. Configure the backend PowerShell session
+## 6. Review local development configuration
 
-Environment variables set with `$env:` apply only to the current PowerShell window. Run backend migration, seed, and startup commands from the same window, or set these variables again in a new window.
+Local development configuration is committed to the repository so developers do not need to create local `.env` files manually.
 
-```powershell
-$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
-$env:CORS_ORIGIN = 'http://localhost:5173'
-$env:HOST = '127.0.0.1'
-$env:PORT = '3000'
+The backend development configuration lives in `backend/.env.development` and contains the local database URL, CORS origin, host, and port:
+
+```env
+DATABASE_URL=postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert
+CORS_ORIGIN=http://localhost:5173
+HOST=127.0.0.1
+PORT=3000
 ```
 
-Confirm the non-secret runtime settings if needed:
+The frontend development configuration lives in `frontend/.env.development` and contains the local backend API URL:
 
-```powershell
-$env:CORS_ORIGIN
-$env:HOST
-$env:PORT
+```env
+VITE_API_BASE_URL=http://localhost:3000
 ```
+
+The backend npm scripts load `backend/.env.development` automatically for local development commands. Vite loads `frontend/.env.development` automatically for the frontend development server.
 
 Do not commit real production credentials to the repository.
 
 ## 7. Apply database migrations
 
-From the project root, in the configured backend PowerShell window, run:
+From the project root, run:
 
 ```powershell
 npm run db:migrate -w backend
@@ -150,8 +152,6 @@ Important: running this seed command again replaces the existing clinic-informat
 Before production deployment, update the seed file only with Product Owner-approved clinic copy.
 
 ## 9. Start the backend
-
-Keep using the PowerShell window containing the backend environment variables:
 
 ```powershell
 npm run dev -w backend
@@ -198,12 +198,6 @@ Open a separate PowerShell window and return to the project root:
 Set-Location -LiteralPath 'C:\work\Ultrasound_Expert'
 ```
 
-Set the backend address for Vite:
-
-```powershell
-$env:VITE_API_BASE_URL = 'http://localhost:3000'
-```
-
 Start the frontend development server:
 
 ```powershell
@@ -244,13 +238,10 @@ Migrations and seeding are normally required only during initial setup or after 
    docker compose -f .\infrastructure\compose.yaml up -d postgres
    ```
 
-4. In the backend terminal, set the backend environment variables again and run:
+4. In the backend terminal, run:
 
    ```powershell
-   $env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
-   $env:CORS_ORIGIN = 'http://localhost:5173'
-   $env:HOST = '127.0.0.1'
-   $env:PORT = '3000'
+   Set-Location -LiteralPath 'C:\work\Ultrasound_Expert'
    npm run dev -w backend
    ```
 
@@ -258,7 +249,6 @@ Migrations and seeding are normally required only during initial setup or after 
 
    ```powershell
    Set-Location -LiteralPath 'C:\work\Ultrasound_Expert'
-   $env:VITE_API_BASE_URL = 'http://localhost:3000'
    npm run dev -w frontend
    ```
 
@@ -346,10 +336,15 @@ Action:
 
 ### Backend reports `DATABASE_URL is required`
 
-The backend was started in a PowerShell window where the environment variable was not set. In that same window, run:
+The backend could not find `DATABASE_URL`. Confirm that `backend/.env.development` exists and contains:
+
+```env
+DATABASE_URL=postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert
+```
+
+Then restart the backend:
 
 ```powershell
-$env:DATABASE_URL = 'postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert'
 npm run dev -w backend
 ```
 
@@ -374,14 +369,13 @@ npm run db:seed:clinic -w backend
 
 ### Browser reports a CORS error
 
-Stop the backend, verify the frontend origin, and restart the backend with:
+Stop the backend and verify that `backend/.env.development` contains:
 
-```powershell
-$env:CORS_ORIGIN = 'http://localhost:5173'
-npm run dev -w backend
+```env
+CORS_ORIGIN=http://localhost:5173
 ```
 
-The value must match the frontend origin exactly.
+The value must match the frontend origin exactly. Restart the backend after editing `backend/.env.development`.
 
 ### A local port is already in use
 
