@@ -8,6 +8,7 @@ const app = buildApp({
   corsOrigin: environment.corsOrigin,
   database,
   logger: true,
+  trustProxy: environment.trustProxy,
 });
 
 async function shutdown(signal: string): Promise<void> {

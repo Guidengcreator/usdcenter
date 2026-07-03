@@ -1,10 +1,15 @@
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import Fastify from "fastify";
+import type { FastifyServerOptions } from "fastify";
 import type { FastifySchemaValidationError } from "fastify/types/schema.js";
 
 import type { Database } from "./db/database.js";
 import { AppointmentRequestsRepository } from "./modules/appointment-requests/appointment-requests.repository.js";
-import { registerAppointmentRequestsRoutes } from "./modules/appointment-requests/appointment-requests.routes.js";
+import {
+  type AppointmentRequestRateLimitOptions,
+  registerAppointmentRequestsRoutes,
+} from "./modules/appointment-requests/appointment-requests.routes.js";
 import {
   AppointmentRequestValidationError,
   AppointmentRequestsService,
@@ -17,21 +22,32 @@ import {
 } from "./modules/clinic/clinic-information.service.js";
 
 interface BuildAppDependencies {
+  appointmentRequestRateLimit?: AppointmentRequestRateLimitOptions;
   corsOrigin?: string;
   database: Database;
-  logger?: boolean;
+  logger?: FastifyServerOptions["logger"];
+  trustProxy?: FastifyServerOptions["trustProxy"];
 }
 
+const defaultAppointmentRequestRateLimit = {
+  max: 5,
+  timeWindowMilliseconds: 15 * 60 * 1000,
+} as const satisfies AppointmentRequestRateLimitOptions;
+
 export function buildApp({
+  appointmentRequestRateLimit = defaultAppointmentRequestRateLimit,
   corsOrigin,
   database,
   logger = false,
+  trustProxy,
 }: BuildAppDependencies) {
-  const app = Fastify({ logger });
+  const app = Fastify({ logger, trustProxy });
 
   if (corsOrigin) {
     void app.register(cors, { origin: corsOrigin });
   }
+
+  void app.register(rateLimit, { global: false });
 
   const appointmentRequestsRepository = new AppointmentRequestsRepository(
     database,
@@ -44,10 +60,22 @@ export function buildApp({
     clinicInformationRepository,
   );
 
-  registerAppointmentRequestsRoutes(app, appointmentRequestsService);
-  registerClinicInformationRoutes(app, clinicInformationService);
+  void app.register(async (routesApp) => {
+    registerAppointmentRequestsRoutes(
+      routesApp,
+      appointmentRequestsService,
+      appointmentRequestRateLimit,
+    );
+    registerClinicInformationRoutes(routesApp, clinicInformationService);
+  });
 
   app.setErrorHandler((error, request, reply) => {
+    if (isRateLimitErrorResponse(error)) {
+      return reply.status(429).send({
+        error: error.error,
+      });
+    }
+
     if (error instanceof AppointmentRequestValidationError) {
       return reply.status(400).send({
         error: {
@@ -104,5 +132,38 @@ function isFastifyValidationError(
     error !== null &&
     "validation" in error &&
     Array.isArray(error.validation)
+  );
+}
+
+function isRateLimitErrorResponse(
+  error: unknown,
+): error is {
+  error: {
+    code: "RATE_LIMIT_EXCEEDED";
+    details: [];
+    message: string;
+  };
+  statusCode: 429;
+} {
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+
+  const response = error as {
+    error?: unknown;
+    statusCode?: unknown;
+  };
+
+  if (response.statusCode !== 429) {
+    return false;
+  }
+
+  const responseError = response.error;
+
+  return (
+    typeof responseError === "object" &&
+    responseError !== null &&
+    "code" in responseError &&
+    responseError.code === "RATE_LIMIT_EXCEEDED"
   );
 }
