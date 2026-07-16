@@ -1,8 +1,17 @@
 import { AppointmentRequestSection } from "./components/AppointmentRequestSection.js";
+import { AdminLoginPage } from "./components/AdminLoginPage.js";
 import { ClinicInformationSection } from "./components/ClinicInformationSection.js";
 import { useClinicInformation } from "./features/clinic/useClinicInformation.js";
 
 export function App() {
+  if (window.location.pathname === "/admin/login") {
+    return <AdminLoginPage />;
+  }
+
+  return <PublicHomePage />;
+}
+
+function PublicHomePage() {
   const clinicInformation = useClinicInformation();
 
   return (

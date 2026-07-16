@@ -5,6 +5,7 @@ import { createDatabase } from "./db/database.js";
 const environment = readEnvironment();
 const { client, database } = createDatabase(environment.databaseUrl);
 const app = buildApp({
+  adminSessionTtlSeconds: environment.adminSessionTtlSeconds,
   corsOrigin: environment.corsOrigin,
   database,
   logger: true,

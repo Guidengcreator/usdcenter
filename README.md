@@ -43,6 +43,19 @@ npm run db:seed:clinic -w backend
 
 The seed data lives in `backend/src/db/seeds/clinic-information.seed.ts` and includes the public clinic name, description, address, phone number, email address, and working hours.
 
+Seed a local admin user without committing credentials:
+
+```powershell
+$env:ADMIN_EMAIL = 'admin@example.com'
+$env:ADMIN_PASSWORD = 'change-this-local-password'
+npm run db:seed:admin -w backend
+Remove-Item Env:\ADMIN_EMAIL
+Remove-Item Env:\ADMIN_PASSWORD
+```
+
+Admin passwords are stored as secure hashes. The backend session cookie is
+HTTP-only and controlled by `ADMIN_SESSION_TTL_SECONDS`.
+
 ## Run locally
 
 Start the backend and frontend in separate terminals:
@@ -56,6 +69,8 @@ npm run dev -w frontend
 ```
 
 The frontend runs at `http://localhost:5173` and the backend at `http://localhost:3000`.
+
+The admin login page runs at `http://localhost:5173/admin/login`.
 
 ## Verify
 

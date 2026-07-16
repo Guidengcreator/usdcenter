@@ -458,6 +458,40 @@ a {
   text-align: right;
 }
 
+.admin-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: 100vh;
+  padding: 2rem;
+  place-items: center;
+}
+
+.admin-login {
+  display: grid;
+  width: min(100%, 54rem);
+  grid-template-columns: minmax(0, 0.8fr) minmax(18rem, 1fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+
+.admin-login-copy h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.4rem, 5vw, 4.8rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.admin-login-form {
+  display: grid;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  gap: 1rem;
+  background: rgb(255 255 255 / 70%);
+  border: 1px solid rgb(24 53 47 / 12%);
+  border-radius: 0.5rem;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -502,6 +536,10 @@ a {
     padding-bottom: 5rem;
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
+  }
+
+  .admin-login {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .clinic-contact {

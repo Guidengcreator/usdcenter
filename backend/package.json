@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.build.json",
     "db:generate": "node --env-file=.env.development ../node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "node --env-file=.env.development --import tsx src/db/migrate.ts",
+    "db:seed:admin": "node --env-file=.env.development --import tsx src/db/seed-admin-user.ts",
     "db:seed:clinic": "node --env-file=.env.development --import tsx src/db/seed-clinic-information.ts",
     "dev": "node --env-file=.env.development --import tsx --watch src/server.ts",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" \"drizzle.config.ts\" \"vitest.config.ts\"",

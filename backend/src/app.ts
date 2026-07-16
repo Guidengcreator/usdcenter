@@ -5,6 +5,16 @@ import type { FastifyServerOptions } from "fastify";
 import type { FastifySchemaValidationError } from "fastify/types/schema.js";
 
 import type { Database } from "./db/database.js";
+import { AdminAuthRepository } from "./modules/admin-auth/admin-auth.repository.js";
+import {
+  registerAdminAuthRoutes,
+  AdminLoginValidationError,
+} from "./modules/admin-auth/admin-auth.routes.js";
+import {
+  AdminAuthenticationError,
+  AdminAuthService,
+} from "./modules/admin-auth/admin-auth.service.js";
+import { AdminSessionsRepository } from "./modules/admin-sessions/admin-sessions.repository.js";
 import { AppointmentRequestsRepository } from "./modules/appointment-requests/appointment-requests.repository.js";
 import {
   type AppointmentRequestRateLimitOptions,
@@ -22,6 +32,8 @@ import {
 } from "./modules/clinic/clinic-information.service.js";
 
 interface BuildAppDependencies {
+  adminCookieSecure?: boolean;
+  adminSessionTtlSeconds?: number;
   appointmentRequestRateLimit?: AppointmentRequestRateLimitOptions;
   corsOrigin?: string;
   database: Database;
@@ -34,7 +46,11 @@ const defaultAppointmentRequestRateLimit = {
   timeWindowMilliseconds: 15 * 60 * 1000,
 } as const satisfies AppointmentRequestRateLimitOptions;
 
+const defaultAdminSessionTtlSeconds = 8 * 60 * 60;
+
 export function buildApp({
+  adminCookieSecure = process.env.NODE_ENV === "production",
+  adminSessionTtlSeconds = defaultAdminSessionTtlSeconds,
   appointmentRequestRateLimit = defaultAppointmentRequestRateLimit,
   corsOrigin,
   database,
@@ -44,7 +60,7 @@ export function buildApp({
   const app = Fastify({ logger, trustProxy });
 
   if (corsOrigin) {
-    void app.register(cors, { origin: corsOrigin });
+    void app.register(cors, { credentials: true, origin: corsOrigin });
   }
 
   void app.register(rateLimit, { global: false });
@@ -59,8 +75,21 @@ export function buildApp({
   const clinicInformationService = new ClinicInformationService(
     clinicInformationRepository,
   );
+  const adminAuthRepository = new AdminAuthRepository(database);
+  const adminSessionsRepository = new AdminSessionsRepository(database);
+  const adminAuthService = new AdminAuthService(
+    adminAuthRepository,
+    adminSessionsRepository,
+    {
+      sessionTtlSeconds: adminSessionTtlSeconds,
+    },
+  );
 
   void app.register(async (routesApp) => {
+    registerAdminAuthRoutes(routesApp, adminAuthService, {
+      secure: adminCookieSecure,
+      sessionTtlSeconds: adminSessionTtlSeconds,
+    });
     registerAppointmentRequestsRoutes(
       routesApp,
       appointmentRequestsService,
@@ -90,6 +119,26 @@ export function buildApp({
       return reply.status(404).send({
         error: {
           code: "CLINIC_INFORMATION_NOT_FOUND",
+          message: error.message,
+          details: [],
+        },
+      });
+    }
+
+    if (error instanceof AdminLoginValidationError) {
+      return reply.status(400).send({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: error.message,
+          details: error.details,
+        },
+      });
+    }
+
+    if (error instanceof AdminAuthenticationError) {
+      return reply.status(401).send({
+        error: {
+          code: "AUTHENTICATION_FAILED",
           message: error.message,
           details: [],
         },
