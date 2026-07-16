@@ -145,6 +145,21 @@ Reasons:
 - Built-in schema validation support.
 - Simple plugin architecture.
 
+### Admin Authentication
+
+Admin authentication uses backend-owned, server-side sessions.
+
+- Admin users are stored in PostgreSQL with normalized email addresses and
+  password hashes.
+- Plain passwords are never stored or returned by API responses.
+- Successful login creates an `admin_sessions` row with an opaque random session
+  id and expiration timestamp.
+- The browser receives the session id only in an HTTP-only cookie scoped to
+  `/api/v1/admin`.
+- Admin endpoints validate the session against PostgreSQL and reject missing,
+  invalid, revoked, or expired sessions.
+- Public endpoints remain accessible without authentication.
+
 ---
 
 ## Database

@@ -1,4 +1,5 @@
 export interface Environment {
+  adminSessionTtlSeconds: number;
   corsOrigin?: string;
   databaseUrl: string;
   host: string;
@@ -24,14 +25,38 @@ export function readEnvironment(
   const trustProxy = parseOptionalTrustedProxyHopCount(
     environment.TRUST_PROXY_HOPS,
   );
+  const adminSessionTtlSeconds = parseAdminSessionTtlSeconds(
+    environment.ADMIN_SESSION_TTL_SECONDS,
+  );
 
   return {
+    adminSessionTtlSeconds,
     corsOrigin: environment.CORS_ORIGIN,
     databaseUrl,
     host: environment.HOST ?? "127.0.0.1",
     port,
     trustProxy,
   };
+}
+
+function parseAdminSessionTtlSeconds(value: string | undefined): number {
+  if (value === undefined || value.trim() === "") {
+    return 8 * 60 * 60;
+  }
+
+  const sessionTtlSeconds = Number(value);
+
+  if (
+    !Number.isInteger(sessionTtlSeconds) ||
+    sessionTtlSeconds < 60 ||
+    sessionTtlSeconds > 60 * 60 * 24 * 30
+  ) {
+    throw new Error(
+      "ADMIN_SESSION_TTL_SECONDS must be an integer between 60 and 2592000",
+    );
+  }
+
+  return sessionTtlSeconds;
 }
 
 function parseOptionalTrustedProxyHopCount(value: string | undefined): number | undefined {

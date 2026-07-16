@@ -109,6 +109,7 @@ DATABASE_URL=postgres://uzd_expert:uzd_expert@localhost:5434/uzd_expert
 CORS_ORIGIN=http://localhost:5173
 HOST=127.0.0.1
 PORT=3000
+ADMIN_SESSION_TTL_SECONDS=28800
 ```
 
 The frontend development configuration lives in `frontend/.env.development` and contains the local backend API URL:
@@ -151,7 +152,26 @@ Important: running this seed command again replaces the existing clinic-informat
 
 Before production deployment, update the seed file only with Product Owner-approved clinic copy.
 
-## 9. Start the backend
+## 9. Seed a local admin user
+
+Admin credentials are not committed to source control. Create or update a local
+admin user by supplying the email and password as environment variables when
+running the seed command.
+
+PowerShell:
+
+```powershell
+$env:ADMIN_EMAIL = 'admin@example.com'
+$env:ADMIN_PASSWORD = 'change-this-local-password'
+npm run db:seed:admin -w backend
+Remove-Item Env:\ADMIN_EMAIL
+Remove-Item Env:\ADMIN_PASSWORD
+```
+
+The command stores the email and a secure password hash in PostgreSQL. It never
+stores the plain password.
+
+## 10. Start the backend
 
 ```powershell
 npm run dev -w backend
@@ -165,7 +185,7 @@ http://127.0.0.1:3000
 
 Leave this window open while using the application.
 
-## 10. Verify the backend API
+## 11. Verify the backend API
 
 Open another PowerShell window and run:
 
@@ -190,7 +210,29 @@ Expected response shape:
 
 This is a public endpoint and does not require authentication.
 
-## 11. Start the frontend
+Verify admin login:
+
+```powershell
+$session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+Invoke-RestMethod `
+  -Uri 'http://localhost:3000/api/v1/admin/login' `
+  -Method Post `
+  -ContentType 'application/json' `
+  -WebSession $session `
+  -Body '{"email":"admin@example.com","password":"change-this-local-password"}' |
+  ConvertTo-Json -Depth 5
+
+Invoke-RestMethod `
+  -Uri 'http://localhost:3000/api/v1/admin/session' `
+  -Method Get `
+  -WebSession $session |
+  ConvertTo-Json -Depth 5
+```
+
+The login response sets an HTTP-only `admin_session_id` cookie containing an
+opaque server-side session id.
+
+## 12. Start the frontend
 
 Open a separate PowerShell window and return to the project root:
 
@@ -210,7 +252,7 @@ Leave this window open. Vite should report that the frontend is available at:
 http://localhost:5173
 ```
 
-## 12. Open and verify the application
+## 13. Open and verify the application
 
 Open the site in your browser:
 
@@ -253,6 +295,15 @@ Migrations and seeding are normally required only during initial setup or after 
    ```
 
 6. Open `http://localhost:5173`.
+
+Open the admin login page at:
+
+```text
+http://localhost:5173/admin/login
+```
+
+Use the local admin credentials seeded above. The frontend relies on the
+HTTP-only cookie and does not store the session id in browser storage.
 
 ## 14. Run automated verification
 

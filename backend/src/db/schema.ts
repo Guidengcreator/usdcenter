@@ -1,4 +1,11 @@
-import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const clinicInformation = pgTable("clinic_information", {
   id: serial("id").primaryKey(),
@@ -27,4 +34,28 @@ export const appointmentRequests = pgTable("appointment_requests", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
+});
+
+export const adminUsers = pgTable("admin_users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 254 }).notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const adminSessions = pgTable("admin_sessions", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  adminUserId: integer("admin_user_id")
+    .notNull()
+    .references(() => adminUsers.id),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
 });

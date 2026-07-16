@@ -6,9 +6,11 @@ All endpoints use the `/api/v1` prefix and JSON response bodies.
 
 ### `GET /api/v1/clinic-information`
 
-Returns the public clinic information used by the clinic information section. Authentication is not required.
+Returns the public clinic information used by the clinic information section.
+Authentication is not required.
 
-The `email` field may be `null` when the clinic does not publish an email address.
+The `email` field may be `null` when the clinic does not publish an email
+address.
 
 #### Successful response
 
@@ -69,6 +71,38 @@ proxy chain. Do not set unrestricted proxy trust for this API.
 }
 ```
 
+`fullName` and `phone` are required. `phone` must contain 10 to 15 digits and
+may include a leading `+`, spaces, parentheses, or hyphens. `email`,
+`serviceType`, and `comment` are optional.
+
+#### Successful response
+
+Status: `201 Created`
+
+```json
+{
+  "data": {
+    "message": "Appointment request submitted successfully"
+  }
+}
+```
+
+#### Validation error
+
+Status: `400 Bad Request`
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request data",
+    "details": [
+      "body/phone must be a valid phone number"
+    ]
+  }
+}
+```
+
 #### Rate limit exceeded
 
 Status: `429 Too Many Requests`
@@ -112,16 +146,52 @@ PostgreSQL or a local file.
 Rate-limit state is process-local and in memory. It resets when the backend
 process restarts and is not shared between multiple backend instances.
 
-`fullName` and `phone` are required. `phone` must contain 10 to 15 digits and may include a leading `+`, spaces, parentheses, or hyphens. `email`, `serviceType`, and `comment` are optional.
+## Admin Authentication
+
+Admin authentication uses server-side sessions. The browser receives only an
+opaque session id in an HTTP-only cookie named `admin_session_id`; admin data
+and password hashes are never stored in the cookie.
+
+Session cookies use:
+
+- `HttpOnly`
+- `SameSite=Lax`
+- `Path=/api/v1/admin`
+- `Max-Age` matching `ADMIN_SESSION_TTL_SECONDS`
+- `Secure` when the backend runs with `NODE_ENV=production`
+
+### `POST /api/v1/admin/login`
+
+Authenticates an administrator with email and password.
+
+#### Request body
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "password"
+}
+```
+
+The backend trims and lowercases the email before lookup. Invalid credentials
+return the same generic response whether the email exists or not.
 
 #### Successful response
 
-Status: `201 Created`
+Status: `200 OK`
+
+Headers:
+
+- `Set-Cookie`: HTTP-only `admin_session_id` cookie containing an opaque
+  server-side session id.
 
 ```json
 {
   "data": {
-    "message": "Appointment request submitted successfully"
+    "admin": {
+      "id": 1,
+      "email": "admin@example.com"
+    }
   }
 }
 ```
@@ -136,8 +206,57 @@ Status: `400 Bad Request`
     "code": "VALIDATION_ERROR",
     "message": "Invalid request data",
     "details": [
-      "body/phone must be a valid phone number"
+      "body/email must NOT have fewer than 1 characters"
     ]
+  }
+}
+```
+
+#### Invalid credentials
+
+Status: `401 Unauthorized`
+
+```json
+{
+  "error": {
+    "code": "AUTHENTICATION_FAILED",
+    "message": "Invalid email or password",
+    "details": []
+  }
+}
+```
+
+### `GET /api/v1/admin/session`
+
+Returns the current authenticated administrator for a valid, unexpired
+server-side session. This endpoint is protected and requires the
+`admin_session_id` cookie.
+
+#### Successful response
+
+Status: `200 OK`
+
+```json
+{
+  "data": {
+    "admin": {
+      "id": 1,
+      "email": "admin@example.com"
+    }
+  }
+}
+```
+
+#### Missing, invalid, or expired session
+
+Status: `401 Unauthorized`
+
+```json
+{
+  "error": {
+    "code": "AUTHENTICATION_FAILED",
+    "message": "Invalid email or password",
+    "details": []
   }
 }
 ```
