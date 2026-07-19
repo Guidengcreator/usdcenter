@@ -59,15 +59,18 @@ PostgreSQL
 
 Frontend:
 
-- AWS Amplify Hosting.
+- React static assets served from the production reverse proxy on the first affordable production deployment.
+- AWS Amplify Hosting remains a later managed hosting option.
 
 Backend:
 
-- AWS App Runner.
+- Fastify backend running in a Docker container on Amazon Lightsail for the first affordable production deployment.
+- Managed backend hosting remains a later migration option.
 
 Database:
 
-- Amazon RDS PostgreSQL.
+- PostgreSQL running in a private Docker Compose service on Amazon Lightsail for the first affordable production deployment.
+- Amazon RDS PostgreSQL remains a later managed database option.
 
 ### Future Evolution
 
@@ -230,17 +233,36 @@ The preferred local setup is a dedicated Docker container.
 
 AWS is the selected cloud provider.
 
+### Amazon Lightsail
+
+Amazon Lightsail is used for the first affordable production deployment.
+
+The Lightsail deployment runs the application on a single VPS through Docker
+Compose:
+
+- frontend static assets served by a reverse proxy,
+- Fastify backend container,
+- PostgreSQL container,
+- automated PostgreSQL dumps,
+- Lightsail instance snapshots.
+
+This keeps Release 1 infrastructure affordable and simple while preserving the
+same three-tier application boundaries.
+
 ### AWS Amplify Hosting
 
-Used for frontend deployment.
+Used for a later managed frontend deployment when the project outgrows the
+single-server deployment.
 
-### AWS App Runner
+### Managed Backend Hosting
 
-Used for backend deployment.
+Used for a later managed backend deployment when higher availability or reduced
+server maintenance becomes more important than the lowest monthly cost.
 
 ### Amazon RDS PostgreSQL
 
-Used for managed PostgreSQL hosting in production.
+Used for a later managed PostgreSQL deployment when automated managed database
+operations become more important than the lowest monthly cost.
 
 ---
 
@@ -890,17 +912,32 @@ Future production monitoring may include:
 
 Production deployment uses AWS.
 
+The first production deployment prioritizes affordability and operational
+simplicity by using Amazon Lightsail with Docker Compose. Managed AWS services
+remain the preferred future migration path when the project requires higher
+availability or reduced server maintenance.
+
 ### Frontend
 
-The frontend is deployed using AWS Amplify Hosting.
+The frontend is built with Vite and served as static files by the production
+reverse proxy container.
 
 ### Backend
 
-The backend is deployed using AWS App Runner.
+The backend is built as a Docker image and runs as a Fastify service inside the
+production Docker Compose deployment.
 
 ### Database
 
-The production database uses Amazon RDS PostgreSQL.
+The first production database runs as a PostgreSQL Docker Compose service with a
+persistent Docker volume. The database port is not exposed publicly.
+
+Production backups include:
+
+- scheduled PostgreSQL dumps,
+- retention for old dump files,
+- Lightsail instance snapshots,
+- periodic restore verification.
 
 ### Environment Variables
 

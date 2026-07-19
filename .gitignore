@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 *.env
+infrastructure/.env.production
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -317,6 +318,10 @@ node_modules/
 .vite/
 dist/
 coverage/
+infrastructure/backups/*.dump
+infrastructure/backups/*.sql
+infrastructure/backups/*.gz
+infrastructure/backups/*.log
 
 # Visual Studio 6 build log
 *.plg
