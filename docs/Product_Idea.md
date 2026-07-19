@@ -77,11 +77,11 @@ Safety:
 - API test library: Supertest or Fastify inject.
 - Test database: isolated PostgreSQL test database, preferably via Docker
 - Cloud provider: AWS.
-- Frontend hosting: AWS Amplify Hosting.
-- Backend hosting: AWS App Runner.
-- Database hosting: Amazon RDS for PostgreSQL.
+- Affordable first production hosting: Amazon Lightsail VPS.
+- First production deployment: Docker Compose on one Lightsail instance, with React static assets, Fastify backend, PostgreSQL, HTTPS reverse proxy, and automated backups.
+- Later managed deployment path: AWS Amplify Hosting, managed backend hosting, and Amazon RDS for PostgreSQL.
 - Initial development: local frontend, local backend, local PostgreSQL via Docker.
-- Deployment later: AWS Amplify + App Runner + RDS.
+- Deployment later: migrate from the Lightsail VPS to managed AWS services when traffic, availability requirements, or operational needs justify the cost.
 
 
 ## Architecture Philosophy
@@ -112,6 +112,7 @@ Example:
 - incremental development
 - no microservices
 - no advanced cloud infrastructure initially
+- affordable hosting should be preferred for the first production deployment
 - frontend and backend must remain clearly separated
 - all important architecture decisions must be documented
 
