@@ -260,3 +260,35 @@ Status: `401 Unauthorized`
   }
 }
 ```
+
+### `POST /api/v1/admin/logout`
+
+Logs out the current administrator by invalidating the server-side session
+referenced by the `admin_session_id` cookie. The endpoint returns the same safe
+success response when no valid session exists, including missing, invalid,
+expired, or already revoked session cookies.
+
+Logout never creates a new session and never returns session ids, password
+hashes, or other sensitive authentication material.
+
+#### Successful response
+
+Status: `200 OK`
+
+Headers:
+
+- `Set-Cookie`: clears the HTTP-only `admin_session_id` cookie using the same
+  cookie name, path, SameSite setting, and environment-based Secure policy as
+  login. The cleared cookie uses `Max-Age=0`.
+
+```json
+{
+  "data": {
+    "loggedOut": true
+  }
+}
+```
+
+After logout, the old session id cannot access protected admin routes.
+Requests to `GET /api/v1/admin/session` with the old cookie return
+`401 Unauthorized`.

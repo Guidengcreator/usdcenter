@@ -37,4 +37,19 @@ export class AdminSessionsRepository {
 
     return row ?? null;
   }
+
+  public async revokeValidSession(sessionId: string, now: Date): Promise<void> {
+    await this.database
+      .update(adminSessions)
+      .set({
+        revokedAt: now,
+      })
+      .where(
+        and(
+          eq(adminSessions.id, sessionId),
+          isNull(adminSessions.revokedAt),
+          gt(adminSessions.expiresAt, now),
+        ),
+      );
+  }
 }

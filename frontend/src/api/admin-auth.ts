@@ -19,10 +19,25 @@ interface ErrorResponse {
   };
 }
 
+interface AdminLogoutResponse {
+  data: AdminLogoutResult;
+}
+
+export interface AdminLogoutResult {
+  loggedOut: boolean;
+}
+
 export class AdminLoginError extends Error {
   public constructor(message: string) {
     super(message);
     this.name = "AdminLoginError";
+  }
+}
+
+export class AdminLogoutError extends Error {
+  public constructor(message: string) {
+    super(message);
+    this.name = "AdminLogoutError";
   }
 }
 
@@ -57,6 +72,31 @@ export async function readAdminSession(
   });
 
   return parseAdminAuthResponse(response);
+}
+
+export async function logoutAdmin(
+  signal?: AbortSignal,
+): Promise<AdminLogoutResult> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/admin/logout`, {
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+    method: "POST",
+    signal,
+  });
+
+  const payload: unknown = await response.json();
+
+  if (!response.ok) {
+    throw new AdminLogoutError("Не вдалося вийти. Спробуйте ще раз.");
+  }
+
+  if (!isAdminLogoutResponse(payload)) {
+    throw new AdminLogoutError("Не вдалося прочитати відповідь сервера.");
+  }
+
+  return payload.data;
 }
 
 function getApiBaseUrl(): string {
@@ -106,6 +146,21 @@ function isAdminAuthResponse(value: unknown): value is AdminAuthResponse {
     typeof admin.id === "number" &&
     "email" in admin &&
     typeof admin.email === "string"
+  );
+}
+
+function isAdminLogoutResponse(value: unknown): value is AdminLogoutResponse {
+  if (!value || typeof value !== "object" || !("data" in value)) {
+    return false;
+  }
+
+  const { data } = value;
+
+  return (
+    !!data &&
+    typeof data === "object" &&
+    "loggedOut" in data &&
+    data.loggedOut === true
   );
 }
 

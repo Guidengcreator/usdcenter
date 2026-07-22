@@ -89,6 +89,14 @@ export class AdminAuthService {
     return admin;
   }
 
+  public async logout(sessionId: string | undefined): Promise<void> {
+    if (!sessionId || !isSessionIdFormatValid(sessionId)) {
+      return;
+    }
+
+    await this.adminSessionsRepository.revokeValidSession(sessionId, new Date());
+  }
+
   public async createOrUpdateAdminUser(values: {
     email: string;
     password: string;
