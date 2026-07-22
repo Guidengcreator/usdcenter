@@ -227,10 +227,17 @@ Invoke-RestMethod `
   -Method Get `
   -WebSession $session |
   ConvertTo-Json -Depth 5
+
+Invoke-RestMethod `
+  -Uri 'http://localhost:3000/api/v1/admin/logout' `
+  -Method Post `
+  -WebSession $session |
+  ConvertTo-Json -Depth 5
 ```
 
 The login response sets an HTTP-only `admin_session_id` cookie containing an
-opaque server-side session id.
+opaque server-side session id. The logout response clears that cookie and
+revokes the server-side session.
 
 ## 12. Start the frontend
 

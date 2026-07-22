@@ -50,6 +50,22 @@ const adminResponseSchema = {
   },
 } as const;
 
+const adminLogoutResponseSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["data"],
+  properties: {
+    data: {
+      type: "object",
+      additionalProperties: false,
+      required: ["loggedOut"],
+      properties: {
+        loggedOut: { type: "boolean" },
+      },
+    },
+  },
+} as const;
+
 export function registerAdminAuthRoutes(
   app: FastifyInstance,
   adminAuthService: AdminAuthService,
@@ -118,6 +134,32 @@ export function registerAdminAuthRoutes(
       });
     },
   );
+
+  app.post(
+    "/api/v1/admin/logout",
+    {
+      schema: {
+        response: {
+          200: adminLogoutResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const sessionId = parseCookieHeader(
+        request.headers.cookie,
+      ).admin_session_id;
+
+      await adminAuthService.logout(sessionId);
+
+      reply.header("Set-Cookie", serializeClearAdminSessionCookie(cookieOptions));
+
+      return reply.status(200).send({
+        data: {
+          loggedOut: true,
+        },
+      });
+    },
+  );
 }
 
 function validateLoginBody(body: { email?: string; password?: string }): void {
@@ -152,6 +194,22 @@ function serializeAdminSessionCookie(
     "SameSite=Lax",
     "Path=/api/v1/admin",
     `Max-Age=${options.sessionTtlSeconds}`,
+  ];
+
+  if (options.secure) {
+    segments.push("Secure");
+  }
+
+  return segments.join("; ");
+}
+
+function serializeClearAdminSessionCookie(options: AdminCookieOptions): string {
+  const segments = [
+    "admin_session_id=",
+    "HttpOnly",
+    "SameSite=Lax",
+    "Path=/api/v1/admin",
+    "Max-Age=0",
   ];
 
   if (options.secure) {

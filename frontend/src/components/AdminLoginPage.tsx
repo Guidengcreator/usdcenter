@@ -1,6 +1,12 @@
 import { useState } from "react";
 
-import { AdminLoginError, loginAdmin, type AdminUser } from "../api/admin-auth.js";
+import {
+  AdminLoginError,
+  AdminLogoutError,
+  loginAdmin,
+  logoutAdmin,
+  type AdminUser,
+} from "../api/admin-auth.js";
 
 interface FormValues {
   email: string;
@@ -16,12 +22,15 @@ export function AdminLoginPage() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [logoutMessage, setLogoutMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage(null);
     setAdmin(null);
+    setLogoutMessage(null);
     setIsSubmitting(true);
 
     try {
@@ -43,6 +52,25 @@ export function AdminLoginPage() {
     }
   }
 
+  async function handleLogout() {
+    setErrorMessage(null);
+    setIsLoggingOut(true);
+
+    try {
+      await logoutAdmin();
+      setAdmin(null);
+      setLogoutMessage("Ви вийшли з адмін-панелі.");
+    } catch (error: unknown) {
+      if (error instanceof AdminLogoutError) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Не вдалося вийти. Спробуйте ще раз.");
+      }
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <main className="admin-shell">
       <section className="admin-login" aria-labelledby="admin-login-title">
@@ -51,6 +79,30 @@ export function AdminLoginPage() {
           <h1 id="admin-login-title">Вхід адміністратора</h1>
         </div>
 
+        {admin ? (
+          <div className="admin-login-form" aria-live="polite">
+            <p className="form-feedback form-feedback-success" role="status">
+              Ви увійшли як {admin.email}.
+            </p>
+
+            {errorMessage && (
+              <p className="form-feedback form-feedback-error" role="alert">
+                {errorMessage}
+              </p>
+            )}
+
+            <div className="form-actions">
+              <button
+                className="submit-button"
+                type="button"
+                disabled={isLoggingOut}
+                onClick={handleLogout}
+              >
+                {isLoggingOut ? "Виходимо..." : "Вийти"}
+              </button>
+            </div>
+          </div>
+        ) : (
         <form className="admin-login-form" onSubmit={handleSubmit}>
           <label className="form-field">
             <span>Електронна пошта</span>
@@ -90,9 +142,9 @@ export function AdminLoginPage() {
             </p>
           )}
 
-          {admin && (
+          {logoutMessage && (
             <p className="form-feedback form-feedback-success" role="status">
-              Ви увійшли як {admin.email}.
+              {logoutMessage}
             </p>
           )}
 
@@ -102,6 +154,7 @@ export function AdminLoginPage() {
             </button>
           </div>
         </form>
+        )}
       </section>
     </main>
   );
